@@ -6,20 +6,16 @@
 <title>Marzanooo</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&family=Share+Tech+Mono&display=swap');
-
   :root {
     --gold: #d4af37; --gold-dark: #b8860b; --black: #0a0a0a; --dark: #121212;
     --panel: #1a1a1a; --red: #c41e3a; --green: #2ecc71; --blue: #3498db;
     --orange: #f39c12; --text: #e0e0e0; --muted: #888; --terminal: #00ff41;
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0d0d0d 100%);
     color: var(--text); font-family: 'Roboto Condensed', sans-serif; min-height: 100vh; overflow-x: hidden;
   }
-
-  /* LOADER */
   #darkweb-loader {
     position: fixed; inset: 0; background: #000; z-index: 100000;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -46,7 +42,6 @@
   .loader-cursor { display: inline-block; width: 8px; height: 14px; background: var(--terminal); margin-left: 4px; animation: blink 0.7s step-end infinite; vertical-align: middle; }
   @keyframes blink { 50% { opacity: 0; } }
 
-  /* PASSWORD */
   #password-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.95);
     display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 20px;
@@ -74,7 +69,6 @@
   .btn.ghost { background: transparent; border: 1px solid #444; color: #aaa; }
   .btn.ghost:hover { border-color: var(--gold); color: var(--gold); }
 
-  /* HEADER */
   .header {
     background: linear-gradient(90deg, #000 0%, #1a1a1a 50%, #000 100%);
     border-bottom: 3px solid var(--gold); padding: 16px 32px;
@@ -99,7 +93,6 @@
   }
   .edit-badge.show { display: inline-block; }
 
-  /* STATUS SAVE */
   #save-status {
     position: fixed; bottom: 20px; right: 20px; background: #111; border: 1px solid #333;
     color: #aaa; padding: 8px 16px; border-radius: 4px; font-size: 12px; z-index: 999;
@@ -109,7 +102,6 @@
   #save-status.success { border-color: var(--green); color: var(--green); }
   #save-status.error { border-color: var(--red); color: var(--red); }
 
-  /* LAYOUT */
   .app-layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 80px); }
   .sidebar { background: #0f0f0f; border-right: 1px solid #222; padding: 20px 16px; overflow-y: auto; }
   .sidebar h3 { font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 2px; color: var(--gold); margin-bottom: 14px; text-transform: uppercase; }
@@ -121,7 +113,6 @@
   }
   .nav-item:hover { border-color: #444; }
   .nav-item.active { border-color: var(--gold); background: #1f1a10; color: var(--gold); }
-
   .mission-item {
     background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 5px; padding: 12px 14px;
     margin-bottom: 8px; cursor: pointer; transition: 0.15s; position: relative;
@@ -136,7 +127,7 @@
 
   .main { padding: 28px 32px; overflow-y: auto; }
   .edit-controls { display: none; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-  .edit-mode .edit-controls { display: flex; }
+  .edit-mode .edit-controls, #finance-edit-controls.show { display: flex; }
 
   .card {
     background: var(--panel); border: 1px solid #2a2a2a; border-radius: 6px;
@@ -155,7 +146,7 @@
   @media (max-width: 1100px) {
     .app-layout { grid-template-columns: 1fr; }
     .sidebar { border-right: none; border-bottom: 1px solid #222; }
-    .grid-2 { grid-template-columns: 1fr; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
   }
 
   .images-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -204,9 +195,7 @@
 
   .note { background: #111; border-left: 3px solid var(--gold); padding: 11px 14px; margin-bottom: 10px; font-size: 13px; line-height: 1.5; color: #ccc; min-height: 44px; }
   .note strong { color: var(--gold); }
-
   [contenteditable="true"] { outline: 2px dashed var(--gold); outline-offset: 2px; background: rgba(212, 175, 55, 0.06); }
-
   .risk-bar { margin-top: 14px; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
   .risk-fill { height: 100%; background: linear-gradient(90deg, #f39c12, var(--red)); }
 
@@ -218,7 +207,7 @@
   .modal-content { background: #1a1a1a; border: 2px solid var(--gold); padding: 28px; border-radius: 8px; width: 440px; max-width: 95%; max-height: 90vh; overflow-y: auto; }
   .modal-content h3 { font-family: 'Oswald', sans-serif; color: var(--gold); letter-spacing: 2px; margin-bottom: 16px; font-size: 18px; }
   .modal-content label { display: block; font-size: 11px; color: var(--muted); letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase; }
-  .modal-content input, .modal-content textarea {
+  .modal-content input, .modal-content textarea, .modal-content select {
     width: 100%; padding: 10px; background: #111; border: 1px solid #333; color: white; margin-bottom: 12px; border-radius: 4px; font-size: 14px;
   }
   .modal-content textarea { min-height: 80px; resize: vertical; }
@@ -227,15 +216,11 @@
   .empty-state { text-align: center; padding: 60px 20px; color: #555; }
   .empty-state h3 { font-family: 'Oswald', sans-serif; letter-spacing: 2px; margin-bottom: 10px; }
 
-  /* Finance placeholder */
-  .placeholder-box {
-    background: #111; border: 1px dashed #333; border-radius: 8px;
-    padding: 60px 40px; text-align: center; color: #666;
+  .finance-balance {
+    font-family: 'Oswald', sans-serif; font-size: 48px; color: var(--gold); text-align: center; padding: 20px 0;
   }
-  .placeholder-box h3 {
-    font-family: 'Oswald', sans-serif; font-size: 22px; letter-spacing: 2px;
-    color: var(--gold); margin-bottom: 12px;
-  }
+  .tx-add { color: var(--green); }
+  .tx-remove { color: var(--red); }
 </style>
 </head>
 <body>
@@ -279,19 +264,16 @@
 
 <div class="app-layout">
   <aside class="sidebar">
-    <!-- NAVIGATION PRINCIPALE -->
     <div class="sidebar-section">
       <h3>Modules</h3>
       <div class="nav-item active" id="nav-missions" onclick="switchModule('missions')">Missions</div>
       <div class="nav-item" id="nav-finance" onclick="switchModule('finance')">Finance</div>
     </div>
 
-    <!-- LISTE DES MISSIONS (visible seulement sur le module Missions) -->
     <div class="sidebar-section" id="missions-sidebar">
       <h3>Missions</h3>
       <div id="mission-list"></div>
       <button class="btn small" style="width:100%; margin-top:12px; display:none;" id="btn-new-mission" onclick="openNewMission()">+ Nouvelle Mission</button>
-      
       <div style="margin-top:18px;">
         <button class="btn small ghost" style="width:100%;" onclick="document.getElementById('import-file').click()">Import JSON</button>
         <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
@@ -309,7 +291,7 @@
 
       <div id="mission-view" style="display:none;">
         <div class="edit-controls">
-          <button class="btn small" onclick="saveAll(true)">💾 Sauvegarder maintenant</button>
+          <button class="btn small" onclick="saveAll()">💾 Sauvegarder maintenant</button>
           <button class="btn small ghost" onclick="changePassword()">Changer le code</button>
           <button class="btn small danger" onclick="deleteCurrentMission()">Supprimer cette mission</button>
         </div>
@@ -340,7 +322,6 @@
               <div class="card-header"><h2>Photos / Reconnaissance</h2></div>
               <div class="card-body"><div class="images-grid" id="images-grid"></div></div>
             </div>
-
             <div class="card">
               <div class="card-header">
                 <h2>Objectifs</h2>
@@ -348,7 +329,6 @@
               </div>
               <div class="card-body"><div class="grid-3" id="objectives-grid"></div></div>
             </div>
-
             <div class="card">
               <div class="card-header">
                 <h2>Sécurité & Intel</h2>
@@ -356,7 +336,6 @@
               </div>
               <div class="card-body"><div class="security-grid" id="security-grid"></div></div>
             </div>
-
             <div class="card">
               <div class="card-header">
                 <h2>Détails Opérationnels</h2>
@@ -365,7 +344,6 @@
               <div class="card-body"><ul class="intel-list" id="intel-list"></ul></div>
             </div>
           </div>
-
           <div>
             <div class="card">
               <div class="card-header">
@@ -374,7 +352,6 @@
               </div>
               <div class="card-body" id="players-container"></div>
             </div>
-
             <div class="card">
               <div class="card-header">
                 <h2>Notes d'Équipe</h2>
@@ -382,7 +359,6 @@
               </div>
               <div class="card-body" id="notes-container"></div>
             </div>
-
             <div class="card">
               <div class="card-header"><h2>Niveau de Risque</h2></div>
               <div class="card-body" style="text-align:center; padding:22px;">
@@ -396,19 +372,32 @@
       </div>
     </div>
 
-    <!-- MODULE FINANCE (PLACEHOLDER) -->
+    <!-- MODULE FINANCE -->
     <div id="module-finance" style="display:none;">
+      <div class="edit-controls" id="finance-edit-controls">
+        <button class="btn small" onclick="openAddTransaction('add')">+ Ajouter de l'argent</button>
+        <button class="btn small danger" onclick="openAddTransaction('remove')">− Retirer de l'argent</button>
+        <button class="btn small ghost" onclick="changeFinancePassword()">Changer mdp Finance</button>
+      </div>
+
       <div class="card">
-        <div class="card-header"><h2>Finance</h2></div>
+        <div class="card-header"><h2>Solde Total</h2></div>
         <div class="card-body">
-          <div class="placeholder-box">
-            <h3>MODULE FINANCE</h3>
-            <p style="font-size:15px; margin-bottom:8px;">En cours de développement</p>
-            <p style="font-size:13px; color:#555;">
-              Cette section accueillera bientôt la gestion financière<br>
-              (revenus, dépenses, investissements, etc.)
-            </p>
-          </div>
+          <div class="finance-balance" id="finance-balance">$0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>Répartition par catégorie</h2></div>
+        <div class="card-body">
+          <div class="grid-3" id="finance-categories"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>Historique des transactions</h2></div>
+        <div class="card-body">
+          <div id="finance-history"></div>
         </div>
       </div>
     </div>
@@ -447,7 +436,7 @@
 
 <div class="modal" id="pw-modal">
   <div class="modal-content">
-    <h3>Changer le code</h3>
+    <h3>Changer le code principal</h3>
     <label>Nouveau code</label><input type="password" id="new-pw">
     <label>Confirmer</label><input type="password" id="new-pw2">
     <div class="modal-actions">
@@ -457,20 +446,46 @@
   </div>
 </div>
 
+<div class="modal" id="tx-modal">
+  <div class="modal-content">
+    <h3 id="tx-modal-title">Transaction</h3>
+    <label>Montant</label>
+    <input type="number" id="tx-amount" min="1" placeholder="Ex: 5000">
+    <label>Catégorie</label>
+    <select id="tx-category">
+      <option value="TSCA">TSCA</option>
+      <option value="ACRU">ACRU</option>
+      <option value="PIST">PIST</option>
+      <option value="BEPA">BEPA</option>
+      <option value="PIRU">PIRU</option>
+      <option value="Autres">Autres</option>
+      <option value="Missions">Missions</option>
+      <option value="Drogue">Drogue</option>
+      <option value="Braquages">Braquages</option>
+    </select>
+    <label>Raison</label>
+    <input type="text" id="tx-reason" placeholder="Ex: Braquage Superette">
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn" onclick="confirmTransaction()">Valider</button>
+    </div>
+  </div>
+</div>
+
 <script>
-/* ============================================================
-   CONFIG JSONBIN
-   ============================================================ */
 const JSONBIN_ID  = "6ab3419cac6210605aeb7ddc";
 const JSONBIN_KEY = "$2a$10$q6fkAXPYKKd6Hes1gcIiA./H20tvrPTV3/bZo92TBJBU0zNswJK3S";
-
 const DEFAULT_PASSWORD = "lester";
+const DEFAULT_FINANCE_PASSWORD = "finance123";
 
 let isEditMode = false;
+let financeEditMode = false;
+let usedPasswordPreview = "";
 let currentMissionId = null;
 let editingPlayerIndex = -1;
 let currentModule = "missions";
-let store = { password: DEFAULT_PASSWORD, missions: {} };
+let currentTxType = "add";
+let store = { password: DEFAULT_PASSWORD, financePassword: DEFAULT_FINANCE_PASSWORD, missions: {}, finance: null };
 let saveTimeout = null;
 
 /* ========== LOADER ========== */
@@ -479,14 +494,13 @@ function startDarkwebLoader() {
     { text: "> Establishing TOR circuit...", cls: "info", delay: 0 },
     { text: "> Connecting to JSONBin cloud...", cls: "info", delay: 500 },
     { text: "> Authenticating secure node", cls: "ok", delay: 1100 },
-    { text: "> Decrypting mission data...", cls: "warn", delay: 1700 },
+    { text: "> Decrypting data...", cls: "warn", delay: 1700 },
     { text: "> Sync complete", cls: "ok", delay: 2300 },
     { text: "> Access granted. Welcome.", cls: "ok", delay: 2900 }
   ];
   const container = document.getElementById("loader-lines");
   const progress = document.getElementById("loader-progress");
   const status = document.getElementById("loader-status");
-
   lines.forEach((line, i) => {
     setTimeout(() => {
       const div = document.createElement("div");
@@ -498,7 +512,6 @@ function startDarkwebLoader() {
       status.innerHTML = (i === lines.length - 1 ? "ACCESS GRANTED" : "LOADING") + '<span class="loader-cursor"></span>';
     }, line.delay);
   });
-
   setTimeout(() => document.getElementById("darkweb-loader").classList.add("hide"), 3600);
 }
 
@@ -512,11 +525,28 @@ async function loadFromJSONBin() {
     const json = await res.json();
     store = json.record || json;
     if (!store.password) store.password = DEFAULT_PASSWORD;
+    if (!store.financePassword) store.financePassword = DEFAULT_FINANCE_PASSWORD;
     if (!store.missions) store.missions = {};
-    console.log("Données chargées depuis JSONBin");
+    if (!store.finance) {
+      store.finance = {
+        balance: 0,
+        categories: { "TSCA":0,"ACRU":0,"PIST":0,"BEPA":0,"PIRU":0,"Autres":0,"Missions":0,"Drogue":0,"Braquages":0 },
+        history: []
+      };
+    }
+    console.log("Données chargées");
   } catch (e) {
-    console.error("Erreur JSONBin:", e);
-    store = { password: DEFAULT_PASSWORD, missions: {} };
+    console.error(e);
+    store = {
+      password: DEFAULT_PASSWORD,
+      financePassword: DEFAULT_FINANCE_PASSWORD,
+      missions: {},
+      finance: {
+        balance: 0,
+        categories: { "TSCA":0,"ACRU":0,"PIST":0,"BEPA":0,"PIRU":0,"Autres":0,"Missions":0,"Drogue":0,"Braquages":0 },
+        history: []
+      }
+    };
     showStatus("Erreur de connexion à JSONBin", true);
   }
 }
@@ -526,24 +556,16 @@ async function saveToJSONBin() {
   try {
     const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key": JSONBIN_KEY
-      },
+      headers: { "Content-Type": "application/json", "X-Master-Key": JSONBIN_KEY },
       body: JSON.stringify(store)
     });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Erreur ${res.status} : ${errText}`);
-    }
-
+    if (!res.ok) throw new Error(await res.text());
     showStatus("Sauvegardé ✓", false);
     return true;
   } catch (e) {
     console.error(e);
     showStatus("Erreur de sauvegarde", true);
-    throw e; // important pour que l'import puisse attraper l'erreur
+    throw e;
   }
 }
 
@@ -559,76 +581,35 @@ function showStatus(msg, isError = false) {
   setTimeout(() => el.classList.remove("show"), 2500);
 }
 
-/* ========== IMPORT JSON ========== */
+/* ========== IMPORT ========== */
 function importJSON(e) {
   const file = e.target.files[0];
   if (!file) return;
-
-  // Affiche un message pendant le chargement
-  showStatus("Import en cours...", false);
-
+  showStatus("Import en cours...");
   const reader = new FileReader();
-  
-  reader.onerror = () => {
-    showStatus("Erreur de lecture du fichier", true);
-    alert("Impossible de lire le fichier.");
-  };
-
   reader.onload = ev => {
     try {
       const data = JSON.parse(ev.target.result);
-
-      // Vérification plus souple
-      if (!data || (typeof data !== "object")) {
-        throw new Error("Le fichier n'est pas un JSON valide");
-      }
-
-      if (!data.missions && !data.password) {
-        throw new Error("Format non reconnu (pas de 'missions' ni 'password')");
-      }
-
-      const confirmMsg = `Remplacer toutes les données actuelles par ce fichier ?\n\n` +
-                         `• Mot de passe : ${data.password ? "présent" : "absent"}\n` +
-                         `• Nombre de missions : ${data.missions ? Object.keys(data.missions).length : 0}`;
-
-      if (!confirm(confirmMsg)) {
-        showStatus("Import annulé", false);
-        return;
-      }
-
-      // On applique les données
+      if (!data || typeof data !== "object") throw new Error("JSON invalide");
+      if (!confirm("Remplacer toutes les données actuelles ?")) return;
       store = data;
       if (!store.password) store.password = DEFAULT_PASSWORD;
+      if (!store.financePassword) store.financePassword = DEFAULT_FINANCE_PASSWORD;
       if (!store.missions) store.missions = {};
-
-      // On force la sauvegarde
+      if (!store.finance) store.finance = { balance:0, categories:{}, history:[] };
       saveToJSONBin().then(() => {
         renderMissionList();
         const ids = Object.keys(store.missions);
-        if (ids.length) {
-          selectMission(ids[0]);
-        } else {
-          showEmpty();
-        }
+        if (ids.length) selectMission(ids[0]);
+        else showEmpty();
         alert("Import réussi !");
-        showStatus("Import terminé ✓", false);
-      }).catch(err => {
-        console.error(err);
-        alert("Les données ont été chargées localement, mais la sauvegarde sur JSONBin a échoué.\n\n" +
-              "Cause probable : le fichier est trop lourd (image base64 trop grande).\n" +
-              "Essayez de retirer les images avant d'importer.");
-        showStatus("Import local OK, sync échouée", true);
       });
-
     } catch (err) {
-      console.error(err);
-      alert("Erreur d'import :\n" + err.message);
-      showStatus("Erreur d'import", true);
+      alert("Erreur d'import : " + err.message);
     }
   };
-
   reader.readAsText(file);
-  e.target.value = ""; // reset pour pouvoir réimporter le même fichier
+  e.target.value = "";
 }
 
 /* ========== MODULE SWITCH ========== */
@@ -636,17 +617,40 @@ function switchModule(mod) {
   currentModule = mod;
   document.getElementById("nav-missions").classList.toggle("active", mod === "missions");
   document.getElementById("nav-finance").classList.toggle("active", mod === "finance");
-
   document.getElementById("module-missions").style.display = mod === "missions" ? "block" : "none";
   document.getElementById("module-finance").style.display = mod === "finance" ? "block" : "none";
   document.getElementById("missions-sidebar").style.display = mod === "missions" ? "block" : "none";
-
   document.getElementById("header-mission-tag").textContent = mod === "missions" ? "BRIEFING" : "FINANCE";
+
+  if (mod === "finance") {
+    if (!financeEditMode) {
+      const ok = askFinancePassword();
+      if (!ok) {
+        switchModule("missions");
+        return;
+      }
+    }
+    renderFinance();
+  }
+}
+
+function askFinancePassword() {
+  const input = prompt("Mot de passe Finance requis pour modifier :");
+  if (input === null) return false;
+  if (input === store.financePassword) {
+    financeEditMode = true;
+    usedPasswordPreview = input.substring(0, 3) + "...";
+    document.getElementById("finance-edit-controls").classList.add("show");
+    return true;
+  }
+  alert("Mot de passe Finance incorrect");
+  return false;
 }
 
 /* ========== AUTH ========== */
 function checkPassword() {
-  if (document.getElementById("password-input").value === store.password) {
+  const input = document.getElementById("password-input").value;
+  if (input === store.password) {
     enterEditMode();
   } else {
     document.getElementById("pw-error").style.display = "block";
@@ -656,6 +660,9 @@ function checkPassword() {
 function enterReadOnly() {
   document.getElementById("password-overlay").classList.add("hidden");
   isEditMode = false;
+  financeEditMode = false;
+  usedPasswordPreview = "";
+  document.getElementById("finance-edit-controls").classList.remove("show");
   renderMissionList();
   const ids = Object.keys(store.missions);
   if (ids.length) selectMission(ids[0]);
@@ -664,10 +671,13 @@ function enterReadOnly() {
 function enterEditMode() {
   document.getElementById("password-overlay").classList.add("hidden");
   isEditMode = true;
+  financeEditMode = true;
+  usedPasswordPreview = store.password.substring(0, 3) + "...";
   document.body.classList.add("edit-mode");
   document.getElementById("edit-badge").classList.add("show");
   document.getElementById("lock-btn").style.display = "inline-block";
   document.getElementById("btn-new-mission").style.display = "block";
+  document.getElementById("finance-edit-controls").classList.add("show");
   ["btn-add-player","btn-add-note","btn-add-obj","btn-add-sec","btn-add-intel"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "inline-block";
@@ -680,17 +690,19 @@ function enterEditMode() {
 
 function lockEdit() {
   isEditMode = false;
+  financeEditMode = false;
   document.body.classList.remove("edit-mode");
   document.getElementById("edit-badge").classList.remove("show");
   document.getElementById("lock-btn").style.display = "none";
   document.getElementById("btn-new-mission").style.display = "none";
+  document.getElementById("finance-edit-controls").classList.remove("show");
   document.querySelectorAll(".editable").forEach(el => el.contentEditable = "false");
   saveCurrentMission(true);
   saveToJSONBin();
   renderMissionList();
 }
 
-/* ========== MISSIONS ========== */
+/* ========== MISSIONS (identiques) ========== */
 function renderMissionList() {
   const list = document.getElementById("mission-list");
   list.innerHTML = "";
@@ -712,21 +724,17 @@ function selectMission(id) {
   currentMissionId = id;
   const m = store.missions[id];
   if (!m) return showEmpty();
-
   document.getElementById("empty-state").style.display = "none";
   document.getElementById("mission-view").style.display = "block";
   document.getElementById("header-mission-tag").textContent = m.title.toUpperCase();
-
   document.getElementById("m-title").innerHTML = m.title || "";
   document.getElementById("m-location").innerHTML = m.location || "";
   document.getElementById("m-goal").innerHTML = m.goal || "";
   document.getElementById("risk-level").innerHTML = m.riskLevel || "ÉLEVÉ";
   document.getElementById("risk-desc").innerHTML = m.riskDesc || "";
   document.getElementById("risk-bar-fill").style.width = (m.riskPercent || 70) + "%";
-
   renderImages(m); renderObjectives(m); renderSecurity(m);
   renderIntel(m); renderPlayers(m); renderNotes(m);
-
   if (isEditMode) document.querySelectorAll(".editable").forEach(el => el.contentEditable = "true");
   renderMissionList();
 }
@@ -745,7 +753,6 @@ function saveCurrentMission(silent = false) {
   m.goal = document.getElementById("m-goal").innerHTML;
   m.riskLevel = document.getElementById("risk-level").innerText.trim();
   m.riskDesc = document.getElementById("risk-desc").innerText.trim();
-
   m.objectives = [];
   document.querySelectorAll("#objectives-grid .target-item").forEach(el => {
     m.objectives.push({
@@ -754,7 +761,6 @@ function saveCurrentMission(silent = false) {
       desc: el.querySelector("p")?.innerText.trim() || ""
     });
   });
-
   m.security = [];
   document.querySelectorAll("#security-grid .sec-box").forEach(el => {
     const v = el.querySelector(".value");
@@ -762,13 +768,8 @@ function saveCurrentMission(silent = false) {
     if (v?.classList.contains("danger")) type = "danger";
     else if (v?.classList.contains("ok")) type = "ok";
     else if (v?.classList.contains("warn")) type = "warn";
-    m.security.push({
-      label: el.querySelector(".label")?.innerText.trim() || "",
-      value: v?.innerText.trim() || "",
-      type
-    });
+    m.security.push({ label: el.querySelector(".label")?.innerText.trim() || "", value: v?.innerText.trim() || "", type });
   });
-
   m.intel = [];
   document.querySelectorAll("#intel-list li").forEach(el => {
     m.intel.push({
@@ -777,7 +778,6 @@ function saveCurrentMission(silent = false) {
       text: el.querySelector("p")?.innerText.trim() || ""
     });
   });
-
   m.notes = [];
   document.querySelectorAll("#notes-container .note").forEach(el => {
     const clone = el.cloneNode(true);
@@ -785,7 +785,6 @@ function saveCurrentMission(silent = false) {
     if (btn) btn.remove();
     m.notes.push(clone.innerHTML.trim());
   });
-
   if (!silent) scheduleSave();
 }
 
@@ -794,7 +793,7 @@ function saveAll() {
   saveToJSONBin();
 }
 
-/* ========== RENDER ========== */
+/* ========== RENDER MISSIONS ========== */
 function renderImages(m) {
   const grid = document.getElementById("images-grid");
   grid.innerHTML = "";
@@ -817,18 +816,9 @@ function renderImages(m) {
 
 function changeImage(index) {
   const currentUrl = (store.missions[currentMissionId].images || [])[index] || "";
-  
-  const url = prompt(
-    "Colle l'URL de l'image (Discord, Imgur, vizu-world...)\n\nLaisse vide pour supprimer l'image.",
-    currentUrl.startsWith("http") ? currentUrl : ""
-  );
-
-  if (url === null) return; // annulé
-
-  if (!store.missions[currentMissionId].images) {
-    store.missions[currentMissionId].images = ["", "", ""];
-  }
-
+  const url = prompt("Colle l'URL de l'image :", currentUrl.startsWith("http") ? currentUrl : "");
+  if (url === null) return;
+  if (!store.missions[currentMissionId].images) store.missions[currentMissionId].images = ["","",""];
   store.missions[currentMissionId].images[index] = url.trim();
   renderImages(store.missions[currentMissionId]);
   scheduleSave();
@@ -932,7 +922,7 @@ function renderNotes(m) {
   });
 }
 
-/* ========== ACTIONS ========== */
+/* ========== ACTIONS MISSIONS ========== */
 function addObjective() {
   store.missions[currentMissionId].objectives.push({ icon:"🎯", title:"Nouvel objectif", desc:"Description" });
   renderObjectives(store.missions[currentMissionId]);
@@ -1073,10 +1063,120 @@ function setNewPassword() {
   store.password = p1;
   closeModal();
   scheduleSave();
-  alert("Code changé et sauvegardé !");
+  alert("Code principal changé !");
 }
 function closeModal() {
   document.querySelectorAll(".modal").forEach(m => m.classList.remove("show"));
+}
+
+/* ========== FINANCE ========== */
+function renderFinance() {
+  if (!store.finance) {
+    store.finance = {
+      balance: 0,
+      categories: { "TSCA":0,"ACRU":0,"PIST":0,"BEPA":0,"PIRU":0,"Autres":0,"Missions":0,"Drogue":0,"Braquages":0 },
+      history: []
+    };
+  }
+
+  document.getElementById("finance-balance").textContent = "$" + (store.finance.balance || 0).toLocaleString();
+
+  const catContainer = document.getElementById("finance-categories");
+  catContainer.innerHTML = "";
+  for (const [name, value] of Object.entries(store.finance.categories)) {
+    const div = document.createElement("div");
+    div.className = "target-item";
+    div.innerHTML = `
+      <h3>${name}</h3>
+      <p style="font-size:18px; color:var(--gold); margin-top:8px;">$${(value||0).toLocaleString()}</p>
+    `;
+    catContainer.appendChild(div);
+  }
+
+  const histContainer = document.getElementById("finance-history");
+  histContainer.innerHTML = "";
+
+  if (!store.finance.history || store.finance.history.length === 0) {
+    histContainer.innerHTML = `<p style="color:#666">Aucune transaction pour le moment.</p>`;
+    return;
+  }
+
+  [...store.finance.history].reverse().forEach(tx => {
+    const div = document.createElement("div");
+    div.className = "note";
+    const sign = tx.type === "add" ? "+" : "−";
+    const colorClass = tx.type === "add" ? "tx-add" : "tx-remove";
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+        <div>
+          <strong class="${colorClass}">${sign}$${tx.amount.toLocaleString()}</strong>
+          → <span style="color:var(--gold)">${tx.category}</span><br>
+          <small style="color:#888">${tx.reason}</small>
+        </div>
+        <div style="text-align:right; font-size:12px; color:#666; white-space:nowrap;">
+          ${new Date(tx.date).toLocaleString()}<br>
+          MDP: ${tx.passwordUsed || "???"}
+        </div>
+      </div>
+    `;
+    histContainer.appendChild(div);
+  });
+}
+
+function openAddTransaction(type) {
+  if (!financeEditMode) {
+    alert("Tu n'as pas le droit de modifier la finance.");
+    return;
+  }
+  currentTxType = type;
+  document.getElementById("tx-modal-title").textContent = type === "add" ? "Ajouter de l'argent" : "Retirer de l'argent";
+  document.getElementById("tx-amount").value = "";
+  document.getElementById("tx-reason").value = "";
+  document.getElementById("tx-modal").classList.add("show");
+}
+
+function confirmTransaction() {
+  const amount = Number(document.getElementById("tx-amount").value);
+  const category = document.getElementById("tx-category").value;
+  const reason = document.getElementById("tx-reason").value.trim() || "Aucune raison";
+
+  if (!amount || amount <= 0) {
+    alert("Montant invalide");
+    return;
+  }
+
+  if (currentTxType === "add") {
+    store.finance.balance += amount;
+    store.finance.categories[category] = (store.finance.categories[category] || 0) + amount;
+  } else {
+    store.finance.balance -= amount;
+    store.finance.categories[category] = (store.finance.categories[category] || 0) - amount;
+  }
+
+  store.finance.history.push({
+    id: Date.now(),
+    date: new Date().toISOString(),
+    amount,
+    type: currentTxType,
+    category,
+    reason,
+    passwordUsed: usedPasswordPreview
+  });
+
+  closeModal();
+  renderFinance();
+  scheduleSave();
+}
+
+function changeFinancePassword() {
+  if (!financeEditMode) return;
+  const p1 = prompt("Nouveau mot de passe Finance :");
+  if (!p1) return;
+  const p2 = prompt("Confirme :");
+  if (p1 !== p2) return alert("Les mots de passe ne correspondent pas");
+  store.financePassword = p1;
+  scheduleSave();
+  alert("Mot de passe Finance changé !");
 }
 
 function weaponIcon(name) {
