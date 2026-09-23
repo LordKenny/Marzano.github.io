@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOS SANTOS HEIST FRAMEWORK</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap');
+
+  :root {
+    --gold: #d4af37;
+    --gold-dark: #b8860b;
+    --black: #0a0a0a;
+    --dark: #121212;
+    --panel: #1a1a1a;
+    --red: #c41e3a;
+    --green: #2ecc71;
+    --blue: #3498db;
+    --orange: #f39c12;
+    --text: #e0e0e0;
+    --muted: #888;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0d0d0d 100%);
+    color: var(--text);
+    font-family: 'Roboto Condensed', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ========== PASSWORD ========== */
+  #password-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; flex-direction: column; gap: 20px;
+  }
+  #password-overlay.hidden { display: none; }
+  #password-box {
+    background: #1a1a1a; border: 2px solid var(--gold);
+    padding: 40px; border-radius: 8px; text-align: center; width: 380px;
+  }
+  #password-box h2 {
+    font-family: 'Oswald', sans-serif; color: var(--gold);
+    letter-spacing: 3px; margin-bottom: 8px; font-size: 24px;
+  }
+  #password-box .sub { color: #666; font-size: 12px; letter-spacing: 2px; margin-bottom: 24px; }
+  #password-input {
+    width: 100%; padding: 14px; background: #111; border: 1px solid #333;
+    color: white; font-size: 18px; text-align: center; margin-bottom: 16px;
+    border-radius: 4px; outline: none; letter-spacing: 4px;
+  }
+  #password-input:focus { border-color: var(--gold); }
+  .btn {
+    background: var(--gold); color: #000; border: none; padding: 12px 28px;
+    font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: 2px;
+    cursor: pointer; border-radius: 3px; text-transform: uppercase;
+    transition: 0.15s;
+  }
+  .btn:hover { background: #e0c050; }
+  .btn.danger { background: var(--red); color: white; }
+  .btn.danger:hover { background: #e03050; }
+  .btn.small { padding: 7px 14px; font-size: 12px; }
+  .btn.ghost { background: transparent; border: 1px solid #444; color: #aaa; }
+  .btn.ghost:hover { border-color: var(--gold); color: var(--gold); }
+  .btn.blue { background: var(--blue); color: white; }
+
+  /* ========== HEADER ========== */
+  .header {
+    background: linear-gradient(90deg, #000 0%, #1a1a1a 50%, #000 100%);
+    border-bottom: 3px solid var(--gold);
+    padding: 16px 32px;
+    display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 14px; }
+  .logo-icon {
+    width: 46px; height: 46px; background: var(--gold); color: #000;
+    font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 20px;
+    display: flex; align-items: center; justify-content: center; border-radius: 4px;
+  }
+  .logo-text h1 {
+    font-family: 'Oswald', sans-serif; font-size: 22px; letter-spacing: 3px;
+    color: var(--gold); text-transform: uppercase;
+  }
+  .logo-text span { font-size: 11px; color: var(--muted); letter-spacing: 3px; }
+  .header-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .mission-tag {
+    background: var(--red); color: white; padding: 7px 16px;
+    font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 2px;
+    text-transform: uppercase; border-radius: 2px;
+  }
+  .edit-badge {
+    background: var(--green); color: #000; padding: 6px 12px;
+    font-size: 11px; font-family: 'Oswald', sans-serif; letter-spacing: 1px;
+    border-radius: 2px; display: none;
+  }
+  .edit-badge.show { display: inline-block; }
+
+  /* ========== SIDEBAR MISSIONS ========== */
+  .app-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: calc(100vh - 80px);
+  }
+  .sidebar {
+    background: #0f0f0f;
+    border-right: 1px solid #222;
+    padding: 20px 16px;
+    overflow-y: auto;
+  }
+  .sidebar h3 {
+    font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 2px;
+    color: var(--gold); margin-bottom: 14px; text-transform: uppercase;
+  }
+  .mission-item {
+    background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 5px;
+    padding: 12px 14px; margin-bottom: 8px; cursor: pointer;
+    transition: 0.15s; position: relative;
+  }
+  .mission-item:hover { border-color: #444; }
+  .mission-item.active { border-color: var(--gold); background: #1f1a10; }
+  .mission-item .m-title {
+    font-family: 'Oswald', sans-serif; font-size: 14px; color: var(--text);
+    letter-spacing: 1px; margin-bottom: 2px;
+  }
+  .mission-item .m-loc { font-size: 11px; color: var(--muted); }
+  .mission-item .m-del {
+    position: absolute; top: 8px; right: 8px; background: none; border: none;
+    color: #555; cursor: pointer; font-size: 14px; display: none;
+  }
+  .edit-mode .mission-item .m-del { display: block; }
+  .mission-item .m-del:hover { color: var(--red); }
+
+  /* ========== MAIN ========== */
+  .main { padding: 28px 32px; overflow-y: auto; }
+
+  .edit-controls {
+    display: none; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;
+  }
+  .edit-mode .edit-controls { display: flex; }
+
+  /* CARDS */
+  .card {
+    background: var(--panel); border: 1px solid #2a2a2a; border-radius: 6px;
+    overflow: hidden; position: relative; margin-bottom: 22px;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+    background: var(--gold);
+  }
+  .card-header {
+    background: linear-gradient(90deg, #1f1f1f, #151515);
+    padding: 13px 20px; border-bottom: 1px solid #2a2a2a;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .card-header h2 {
+    font-family: 'Oswald', sans-serif; font-size: 15px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--gold);
+  }
+  .card-body { padding: 20px; }
+
+  /* GRID LAYOUTS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 1100px) {
+    .app-layout { grid-template-columns: 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid #222; }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  /* IMAGES */
+  .images-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .images-grid img, .img-slot {
+    width: 100%; height: 160px; object-fit: cover; border-radius: 4px;
+    border: 1px solid #333; background: #111;
+  }
+  .img-full { grid-column: 1 / -1; height: 200px !important; }
+  .img-slot {
+    display: flex; align-items: center; justify-content: center;
+    color: #444; font-size: 13px; cursor: pointer; flex-direction: column; gap: 6px;
+  }
+  .img-slot:hover { border-color: var(--gold); color: var(--gold); }
+  .img-input { display: none; }
+
+  /* TARGETS / OBJECTIVES */
+  .target-item {
+    background: #111; border: 1px solid #2a2a2a; border-radius: 4px;
+    padding: 16px; text-align: center;
+  }
+  .target-item .icon { font-size: 26px; margin-bottom: 6px; }
+  .target-item h3 {
+    font-family: 'Oswald', sans-serif; font-size: 14px; color: var(--gold);
+    letter-spacing: 1px; margin-bottom: 4px;
+  }
+  .target-item p { font-size: 12px; color: var(--muted); }
+
+  /* SECURITY */
+  .security-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sec-box {
+    background: #111; border: 1px solid #2a2a2a; border-radius: 4px; padding: 12px;
+  }
+  .sec-box .label {
+    font-size: 10px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 3px;
+  }
+  .sec-box .value {
+    font-family: 'Oswald', sans-serif; font-size: 15px; color: var(--text);
+  }
+  .sec-box .value.danger { color: var(--red); }
+  .sec-box .value.ok { color: var(--green); }
+  .sec-box .value.warn { color: var(--orange); }
+
+  /* INTEL */
+  .intel-list { list-style: none; }
+  .intel-list li {
+    display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid #222;
+  }
+  .intel-list li:last-child { border-bottom: none; }
+  .intel-icon {
+    width: 34px; height: 34px; background: #1f1f1f; border: 1px solid #333;
+    border-radius: 4px; display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+  }
+  .intel-content h4 {
+    font-family: 'Oswald', sans-serif; font-size: 13px; color: var(--text);
+    letter-spacing: 1px; margin-bottom: 2px;
+  }
+  .intel-content p { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+  /* PLAYERS */
+  .player-card {
+    background: #111; border: 1px solid #2a2a2a; border-radius: 6px;
+    padding: 14px; margin-bottom: 12px; position: relative;
+  }
+  .player-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; gap: 8px;
+  }
+  .player-name {
+    font-family: 'Oswald', sans-serif; font-size: 16px; color: var(--gold);
+    letter-spacing: 1px;
+  }
+  .player-role {
+    background: #222; color: #ccc; padding: 3px 9px; border-radius: 3px;
+    font-size: 11px; letter-spacing: 1px; white-space: nowrap;
+  }
+  .player-plan {
+    font-size: 12px; color: #bbb; line-height: 1.5; margin-bottom: 10px;
+    min-height: 32px;
+  }
+  .equip-list { display: flex; flex-wrap: wrap; gap: 5px; }
+  .equip-tag {
+    background: #1a1a1a; border: 1px solid #333; color: #ccc;
+    padding: 3px 9px; border-radius: 3px; font-size: 11px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .equip-tag .remove-eq {
+    cursor: pointer; color: var(--red); font-weight: bold; display: none;
+  }
+  .edit-mode .equip-tag .remove-eq { display: inline; }
+
+  .player-actions {
+    position: absolute; top: 10px; right: 10px; display: none; gap: 5px;
+  }
+  .edit-mode .player-actions { display: flex; }
+
+  /* NOTES */
+  .note {
+    background: #111; border-left: 3px solid var(--gold);
+    padding: 11px 14px; margin-bottom: 10px; font-size: 13px;
+    line-height: 1.5; color: #ccc; min-height: 44px;
+  }
+  .note strong { color: var(--gold); }
+
+  /* EDITABLE */
+  [contenteditable="true"] {
+    outline: 2px dashed var(--gold); outline-offset: 2px;
+    background: rgba(212, 175, 55, 0.06);
+  }
+
+  /* RISK */
+  .risk-bar {
+    margin-top: 14px; height: 6px; background: #222; border-radius: 3px; overflow: hidden;
+  }
+  .risk-fill { height: 100%; background: linear-gradient(90deg, #f39c12, var(--red)); }
+
+  /* FOOTER */
+  .footer {
+    text-align: center; padding: 16px; border-top: 1px solid #222;
+    color: var(--muted); font-size: 11px; letter-spacing: 2px;
+  }
+  .footer span { color: var(--gold); }
+
+  /* MODALS */
+  .modal {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+    z-index: 10000; align-items: center; justify-content: center;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: #1a1a1a; border: 2px solid var(--gold); padding: 28px;
+    border-radius: 8px; width: 440px; max-width: 95%; max-height: 90vh; overflow-y: auto;
+  }
+  .modal-content h3 {
+    font-family: 'Oswald', sans-serif; color: var(--gold);
+    letter-spacing: 2px; margin-bottom: 16px; font-size: 18px;
+  }
+  .modal-content label {
+    display: block; font-size: 11px; color: var(--muted); letter-spacing: 1px;
+    margin-bottom: 4px; text-transform: uppercase;
+  }
+  .modal-content input, .modal-content select, .modal-content textarea {
+    width: 100%; padding: 10px; background: #111; border: 1px solid #333;
+    color: white; margin-bottom: 12px; border-radius: 4px; font-size: 14px;
+  }
+  .modal-content textarea { min-height: 80px; resize: vertical; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: #555;
+  }
+  .empty-state h3 { font-family: 'Oswald', sans-serif; letter-spacing: 2px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD OVERLAY -->
+<div id="password-overlay">
+  <div id="password-box">
+    <h2>LOS SANTOS</h2>
+    <div class="sub">HEIST FRAMEWORK • ACCÈS RESTREINT</div>
+    <input type="password" id="password-input" placeholder="••••••••" autocomplete="off">
+    <button class="btn" onclick="checkPassword()">DÉVERROUILLER</button>
+    <p id="pw-error" style="color:var(--red); margin-top:12px; font-size:13px; display:none;">Code incorrect</p>
+    <p style="color:#555; margin-top:22px; font-size:11px;">Ou continuer en lecture seule</p>
+    <button class="btn ghost" style="margin-top:8px;" onclick="enterReadOnly()">Lecture seule</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">LS</div>
+    <div class="logo-text">
+      <h1>Heist Framework</h1>
+      <span>Los Santos • Mission Planner</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="edit-badge" id="edit-badge">MODE ÉDITION</span>
+    <div class="mission-tag" id="header-mission-tag">BRIEFING</div>
+    <button class="btn small ghost" id="lock-btn" style="display:none;" onclick="lockEdit()">VERROUILLER</button>
+  </div>
+</header>
+
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h3>Missions</h3>
+    <div id="mission-list"></div>
+    <button class="btn small" style="width:100%; margin-top:12px; display:none;" id="btn-new-mission" onclick="openNewMission()">+ Nouvelle Mission</button>
+    <button class="btn small ghost" style="width:100%; margin-top:8px;" onclick="exportJSON()">Export JSON</button>
+    <button class="btn small ghost" style="width:100%; margin-top:6px;" onclick="document.getElementById('import-file').click()">Import JSON</button>
+    <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importJSON(event)">
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main" id="main-content">
+    <div class="empty-state" id="empty-state">
+      <h3>Aucune mission sélectionnée</h3>
+      <p>Choisis une mission dans la barre latérale<br>ou crée-en une nouvelle (mode édition).</p>
+    </div>
+
+    <div id="mission-view" style="display:none;">
+
+      <!-- EDIT CONTROLS -->
+      <div class="edit-controls">
+        <button class="btn small" onclick="saveCurrentMission()">💾 Sauvegarder</button>
+        <button class="btn small ghost" onclick="changePassword()">Changer le code</button>
+        <button class="btn small danger" onclick="deleteCurrentMission()">Supprimer cette mission</button>
+      </div>
+
+      <!-- TITLE / LOCATION -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Informations Mission</h2>
+        </div>
+        <div class="card-body">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div>
+              <div style="font-size:10px; color:var(--muted); letter-spacing:1px; margin-bottom:4px;">NOM DE LA MISSION</div>
+              <div contenteditable="false" class="editable" id="m-title" style="font-family:'Oswald',sans-serif; font-size:22px; color:var(--gold); letter-spacing:2px;"></div>
+            </div>
+            <div>
+              <div style="font-size:10px; color:var(--muted); letter-spacing:1px; margin-bottom:4px;">LIEU</div>
+              <div contenteditable="false" class="editable" id="m-location" style="font-size:16px; color:var(--text);"></div>
+            </div>
+          </div>
+          <div style="margin-top:14px;">
+            <div style="font-size:10px; color:var(--muted); letter-spacing:1px; margin-bottom:4px;">OBJECTIF GLOBAL</div>
+            <div contenteditable="false" class="editable" id="m-goal" style="font-size:14px; color:#ccc; line-height:1.5;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- LEFT -->
+        <div>
+          <!-- IMAGES -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Photos / Reconnaissance</h2>
+            </div>
+            <div class="card-body">
+              <div class="images-grid" id="images-grid">
+                <!-- filled by JS -->
+              </div>
+              <p style="font-size:10px; color:#555; margin-top:8px;">Clique sur un slot (mode édition) pour ajouter une image (base64 local).</p>
+            </div>
+          </div>
+
+          <!-- OBJECTIVES -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Objectifs</h2>
+              <button class="btn small" style="display:none;" id="btn-add-obj" onclick="addObjective()">+</button>
+            </div>
+            <div class="card-body">
+              <div class="grid-3" id="objectives-grid"></div>
+            </div>
+          </div>
+
+          <!-- SECURITY -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Sécurité & Intel</h2>
+              <button class="btn small" style="display:none;" id="btn-add-sec" onclick="addSecurityItem()">+</button>
+            </div>
+            <div class="card-body">
+              <div class="security-grid" id="security-grid"></div>
+            </div>
+          </div>
+
+          <!-- DETAILED INTEL -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Détails Opérationnels</h2>
+              <button class="btn small" style="display:none;" id="btn-add-intel" onclick="addIntel()">+</button>
+            </div>
+            <div class="card-body">
+              <ul class="intel-list" id="intel-list"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div>
+          <!-- TEAM -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Équipe</h2>
+              <button class="btn small" style="display:none;" id="btn-add-player" onclick="openAddPlayer()">+ Joueur</button>
+            </div>
+            <div class="card-body" id="players-container"></div>
+          </div>
+
+          <!-- NOTES -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Notes d'Équipe</h2>
+              <button class="btn small" style="display:none;" id="btn-add-note" onclick="addNote()">+</button>
+            </div>
+            <div class="card-body" id="notes-container"></div>
+          </div>
+
+          <!-- RISK -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Niveau de Risque</h2>
+            </div>
+            <div class="card-body" style="text-align:center; padding:22px;">
+              <div contenteditable="false" class="editable" id="risk-level" style="font-family:'Oswald',sans-serif; font-size:36px; color:var(--red); letter-spacing:3px;"></div>
+              <div contenteditable="false" class="editable" id="risk-desc" style="font-size:12px; color:var(--muted); margin-top:6px;"></div>
+              <div class="risk-bar"><div class="risk-fill" id="risk-bar-fill" style="width:75%;"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="footer">
+  <span>LOS SANTOS HEIST FRAMEWORK</span> • GTA ONLINE STYLE • LOCAL STORAGE
+</div>
+
+<!-- MODAL PLAYER -->
+<div class="modal" id="player-modal">
+  <div class="modal-content">
+    <h3 id="modal-title">Ajouter un joueur</h3>
+    <label>Nom du personnage</label>
+    <input type="text" id="p-name" placeholder="Ex: Michael">
+    <label>Rôle</label>
+    <input type="text" id="p-role" placeholder="Ex: Hacker, Driver, Gunman...">
+    <label>Plan / Instructions</label>
+    <textarea id="p-plan" placeholder="Ce que cette personne doit faire..."></textarea>
+    <label>Équipement (séparé par des virgules)</label>
+    <input type="text" id="p-equip" placeholder="Pistol, SMG, Gilet pare-balles, Radio...">
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn" onclick="savePlayer()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NEW MISSION -->
+<div class="modal" id="new-mission-modal">
+  <div class="modal-content">
+    <h3>Nouvelle Mission</h3>
+    <label>Nom de la mission</label>
+    <input type="text" id="nm-title" placeholder="Ex: Braquage Fleeca">
+    <label>Lieu</label>
+    <input type="text" id="nm-location" placeholder="Ex: Rockford Hills">
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn" onclick="createMission()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PASSWORD -->
+<div class="modal" id="pw-modal">
+  <div class="modal-content">
+    <h3>Changer le code</h3>
+    <label>Nouveau code</label>
+    <input type="password" id="new-pw">
+    <label>Confirmer</label>
+    <input type="password" id="new-pw2">
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn" onclick="setNewPassword()">Valider</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   LOS SANTOS HEIST FRAMEWORK
+   Framework réutilisable pour plans de braquage / missions
+   Données stockées en localStorage
+   ============================================================ */
+
+const DEFAULT_PASSWORD = "lester";
+const STORAGE_KEY = "ls_heist_framework_v1";
+
+let isEditMode = false;
+let currentMissionId = null;
+let editingPlayerIndex = -1;
+
+// ========== DEFAULT DATA (Palmville Jewelry) ==========
+const DEFAULT_MISSIONS = {
+  password: DEFAULT_PASSWORD,
+  missions: {
+    "palmville": {
+      id: "palmville",
+      title: "Palmville Jewelry",
+      location: "Los Santos • Boulevard",
+      goal: "Le but est simple : TOUT RÉCUPÉRER. Rolex, vitrines, salle codée — on vide la boutique.",
+      riskLevel: "ÉLEVÉ",
+      riskDesc: "Commissariat juste à côté + 1 seule entrée",
+      riskPercent: 82,
+      images: ["", "", ""], // base64 or empty
+      objectives: [
+        { icon: "⌚", title: "3 ROLEX", desc: "Sur le comptoir principal" },
+        { icon: "💎", title: "Toutes les vitrines", desc: "Bijoux + colliers + bagues" },
+        { icon: "🔒", title: "Salle codée", desc: "Contenu à récupérer aussi" }
+      ],
+      security: [
+        { label: "Caméras", value: "5 • Chaque coin", type: "danger" },
+        { label: "Système d'alarme", value: "Aucun détecté", type: "ok" },
+        { label: "Entrées", value: "1 seule", type: "warn" },
+        { label: "Sécurité privée", value: "Merryweather", type: "" },
+        { label: "Commissariat", value: "Juste à côté • Réponse très rapide", type: "danger" }
+      ],
+      intel: [
+        { icon: "📷", title: "Surveillance Vidéo", text: "5 caméras installées dans chaque coin. Couverture quasi totale." },
+        { icon: "🚫", title: "Système d'Alarme", text: "Aucun système d'alarme visible. Opportunité majeure." },
+        { icon: "🔑", title: "Salle Fermée", text: "Salle arrière protégée par un code numérique. À ouvrir et vider." },
+        { icon: "🚪", title: "Point d'Accès Unique", text: "Une seule entrée principale. Extraction à planifier soigneusement." },
+        { icon: "👮", title: "Commissariat à proximité", text: "Le commissariat est juste à côté. Temps de réponse police extrêmement court." },
+        { icon: "💰", title: "Acheteur de pépites d'or", text: "Un mec à l'intérieur de la bijouterie. Les clients peuvent lui vendre des pépites d'or. C'est juste un employé / contact interne." }
+      ],
+      players: [
+        { name: "Michael", role: "Chef d'équipe", plan: "Coordonne l'équipe, entre en premier, sécurise le comptoir des Rolex.", equip: ["Pistol", "Gilet pare-balles", "Radio"] },
+        { name: "Franklin", role: "Gunman", plan: "Couvre les angles, neutralise les caméras si besoin, protège l'extraction.", equip: ["SMG", "Gilet pare-balles", "Flashbang"] },
+        { name: "Trevor", role: "Chaos / Distraction", plan: "Crée une diversion si la police arrive trop vite. Reste prêt à sortir en force.", equip: ["Assault Rifle", "Grenades", "Gilet lourd"] },
+        { name: "Lester", role: "Hacker (support)", plan: "Reste en voiture. Loop les caméras et guide l'équipe via radio.", equip: ["Laptop", "Radio", "Pistol"] }
+      ],
+      notes: [
+        "<strong>Priorité :</strong> Tout vider. Rolex + vitrines + salle codée.",
+        "<strong>Attention police :</strong> Commissariat juste à côté → pas de temps à perdre.",
+        "<strong>Caméras :</strong> 5 points. Prévoir un hacker ou destruction rapide.",
+        "<strong>Extraction :</strong> Une seule porte. Véhicule prêt juste devant."
+      ]
+    }
+  }
+};
+
+let store = null;
+
+// ========== INIT ==========
+function loadStore() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try { store = JSON.parse(raw); }
+    catch(e) { store = JSON.parse(JSON.stringify(DEFAULT_MISSIONS)); }
+  } else {
+    store = JSON.parse(JSON.stringify(DEFAULT_MISSIONS));
+  }
+  // Ensure password exists
+  if (!store.password) store.password = DEFAULT_PASSWORD;
+}
+
+function saveStore() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+}
+
+// ========== PASSWORD ==========
+function checkPassword() {
+  const input = document.getElementById("password-input").value;
+  if (input === store.password) {
+    enterEditMode();
+  } else {
+    document.getElementById("pw-error").style.display = "block";
+  }
+}
+
+function enterReadOnly() {
+  document.getElementById("password-overlay").classList.add("hidden");
+  isEditMode = false;
+  renderMissionList();
+  // Auto-select first mission
+  const ids = Object.keys(store.missions);
+  if (ids.length) selectMission(ids[0]);
+}
+
+function enterEditMode() {
+  document.getElementById("password-overlay").classList.add("hidden");
+  isEditMode = true;
+  document.body.classList.add("edit-mode");
+  document.getElementById("edit-badge").classList.add("show");
+  document.getElementById("lock-btn").style.display = "inline-block";
+  document.getElementById("btn-new-mission").style.display = "block";
+  document.getElementById("btn-add-player").style.display = "inline-block";
+  document.getElementById("btn-add-note").style.display = "inline-block";
+  document.getElementById("btn-add-obj").style.display = "inline-block";
+  document.getElementById("btn-add-sec").style.display = "inline-block";
+  document.getElementById("btn-add-intel").style.display = "inline-block";
+
+  renderMissionList();
+  const ids = Object.keys(store.missions);
+  if (ids.length) selectMission(ids[0]);
+  else showEmpty();
+}
+
+function lockEdit() {
+  isEditMode = false;
+  document.body.classList.remove("edit-mode");
+  document.getElementById("edit-badge").classList.remove("show");
+  document.getElementById("lock-btn").style.display = "none";
+  document.getElementById("btn-new-mission").style.display = "none";
+  document.getElementById("btn-add-player").style.display = "none";
+  document.getElementById("btn-add-note").style.display = "none";
+  document.getElementById("btn-add-obj").style.display = "none";
+  document.getElementById("btn-add-sec").style.display = "none";
+  document.getElementById("btn-add-intel").style.display = "none";
+
+  // Disable contenteditable
+  document.querySelectorAll(".editable").forEach(el => el.contentEditable = "false");
+  saveCurrentMission();
+  renderMissionList();
+  alert("Mode édition verrouillé. Données sauvegardées.");
+}
+
+// ========== MISSION LIST ==========
+function renderMissionList() {
+  const list = document.getElementById("mission-list");
+  list.innerHTML = "";
+  Object.values(store.missions).forEach(m => {
+    const div = document.createElement("div");
+    div.className = "mission-item" + (m.id === currentMissionId ? " active" : "");
+    div.onclick = () => selectMission(m.id);
+    div.innerHTML = `
+      <div class="m-title">${esc(m.title)}</div>
+      <div class="m-loc">${esc(m.location)}</div>
+      <button class="m-del" onclick="event.stopPropagation(); deleteMission('${m.id}')">✕</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function selectMission(id) {
+  // Save current before switch
+  if (currentMissionId && isEditMode) saveCurrentMission(true);
+
+  currentMissionId = id;
+  const m = store.missions[id];
+  if (!m) return showEmpty();
+
+  document.getElementById("empty-state").style.display = "none";
+  document.getElementById("mission-view").style.display = "block";
+  document.getElementById("header-mission-tag").textContent = m.title.toUpperCase();
+
+  // Fill fields
+  document.getElementById("m-title").innerHTML = m.title;
+  document.getElementById("m-location").innerHTML = m.location;
+  document.getElementById("m-goal").innerHTML = m.goal;
+  document.getElementById("risk-level").innerHTML = m.riskLevel || "ÉLEVÉ";
+  document.getElementById("risk-desc").innerHTML = m.riskDesc || "";
+  document.getElementById("risk-bar-fill").style.width = (m.riskPercent || 70) + "%";
+
+  renderImages(m);
+  renderObjectives(m);
+  renderSecurity(m);
+  renderIntel(m);
+  renderPlayers(m);
+  renderNotes(m);
+
+  // Enable editables if in edit mode
+  if (isEditMode) {
+    document.querySelectorAll(".editable").forEach(el => el.contentEditable = "true");
+  }
+
+  renderMissionList();
+}
+
+function showEmpty() {
+  document.getElementById("empty-state").style.display = "block";
+  document.getElementById("mission-view").style.display = "none";
+  currentMissionId = null;
+}
+
+// ========== RENDER SECTIONS ==========
+function renderImages(m) {
+  const grid = document.getElementById("images-grid");
+  grid.innerHTML = "";
+  const imgs = m.images || ["", "", ""];
+  imgs.forEach((src, i) => {
+    if (src) {
+      const img = document.createElement("img");
+      img.src = src;
+      if (i === 0) img.className = "img-full";
+      img.onclick = () => { if (isEditMode) changeImage(i); };
+      grid.appendChild(img);
+    } else {
+      const slot = document.createElement("div");
+      slot.className = "img-slot" + (i === 0 ? " img-full" : "");
+      slot.innerHTML = isEditMode ? "📷<br>Ajouter image" : "Pas d'image";
+      slot.onclick = () => { if (isEditMode) changeImage(i); };
+      grid.appendChild(slot);
+    }
+  });
+}
+
+function changeImage(index) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const m = store.missions[currentMissionId];
+      if (!m.images) m.images = ["", "", ""];
+      m.images[index] = ev.target.result;
+      renderImages(m);
+      saveStore();
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function renderObjectives(m) {
+  const grid = document.getElementById("objectives-grid");
+  grid.innerHTML = "";
+  (m.objectives || []).forEach((o, i) => {
+    const div = document.createElement("div");
+    div.className = "target-item";
+    div.innerHTML = `
+      <div class="icon">${o.icon || "🎯"}</div>
+      <h3 contenteditable="${isEditMode}" class="editable">${esc(o.title)}</h3>
+      <p contenteditable="${isEditMode}" class="editable">${esc(o.desc)}</p>
+      ${isEditMode ? `<button class="btn small danger" style="margin-top:8px;" onclick="removeObjective(${i})">✕</button>` : ""}
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function renderSecurity(m) {
+  const grid = document.getElementById("security-grid");
+  grid.innerHTML = "";
+  (m.security || []).forEach((s, i) => {
+    const div = document.createElement("div");
+    div.className = "sec-box";
+    if (i === (m.security.length - 1) && m.security.length % 2 === 1) div.style.gridColumn = "1 / -1";
+    div.innerHTML = `
+      <div class="label" contenteditable="${isEditMode}" class="editable">${esc(s.label)}</div>
+      <div class="value ${s.type || ""}" contenteditable="${isEditMode}" class="editable">${esc(s.value)}</div>
+      ${isEditMode ? `<button class="btn small danger" style="margin-top:6px;" onclick="removeSecurity(${i})">✕</button>` : ""}
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function renderIntel(m) {
+  const list = document.getElementById("intel-list");
+  list.innerHTML = "";
+  (m.intel || []).forEach((item, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <div class="intel-icon">${item.icon || "📋"}</div>
+      <div class="intel-content" style="flex:1;">
+        <h4 contenteditable="${isEditMode}" class="editable">${esc(item.title)}</h4>
+        <p contenteditable="${isEditMode}" class="editable">${esc(item.text)}</p>
+      </div>
+      ${isEditMode ? `<button class="btn small danger" onclick="removeIntel(${i})">✕</button>` : ""}
+    `;
+    list.appendChild(li);
+  });
+}
+
+function renderPlayers(m) {
+  const container = document.getElementById("players-container");
+  container.innerHTML = "";
+  (m.players || []).forEach((p, i) => {
+    const card = document.createElement("div");
+    card.className = "player-card";
+    card.innerHTML = `
+      <div class="player-actions">
+        <button class="btn small ghost" onclick="editPlayer(${i})">✎</button>
+        <button class="btn small danger" onclick="deletePlayer(${i})">✕</button>
+      </div>
+      <div class="player-header">
+        <div class="player-name">${esc(p.name)}</div>
+        <div class="player-role">${esc(p.role)}</div>
+      </div>
+      <div class="player-plan">${esc(p.plan)}</div>
+      <div class="equip-list">
+        ${(p.equip || []).map((e, ei) => `
+          <span class="equip-tag">
+            ${weaponIcon(e)} ${esc(e)}
+            <span class="remove-eq" onclick="removeEquip(${i},${ei})">×</span>
+          </span>
+        `).join("")}
+      </div>
+      ${isEditMode ? `<button class="btn small ghost" style="margin-top:8px;" onclick="addEquip(${i})">+ Équipement</button>` : ""}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function renderNotes(m) {
+  const container = document.getElementById("notes-container");
+  container.innerHTML = "";
+  (m.notes || []).forEach((n, i) => {
+    const div = document.createElement("div");
+    div.className = "note editable";
+    div.contentEditable = isEditMode;
+    div.innerHTML = n;
+    if (isEditMode) {
+      const btn = document.createElement("button");
+      btn.className = "btn small danger";
+      btn.style.marginTop = "6px";
+      btn.textContent = "Supprimer";
+      btn.onclick = () => { m.notes.splice(i, 1); renderNotes(m); };
+      div.appendChild(document.createElement("br"));
+      div.appendChild(btn);
+    }
+    container.appendChild(div);
+  });
+}
+
+// ========== ADD / REMOVE ==========
+function addObjective() {
+  const m = store.missions[currentMissionId];
+  m.objectives.push({ icon: "🎯", title: "Nouvel objectif", desc: "Description" });
+  renderObjectives(m);
+}
+
+function removeObjective(i) {
+  store.missions[currentMissionId].objectives.splice(i, 1);
+  renderObjectives(store.missions[currentMissionId]);
+}
+
+function addSecurityItem() {
+  const m = store.missions[currentMissionId];
+  m.security.push({ label: "Nouveau", value: "Valeur", type: "" });
+  renderSecurity(m);
+}
+
+function removeSecurity(i) {
+  store.missions[currentMissionId].security.splice(i, 1);
+  renderSecurity(store.missions[currentMissionId]);
+}
+
+function addIntel() {
+  const m = store.missions[currentMissionId];
+  m.intel.push({ icon: "📋", title: "Nouveau renseignement", text: "Détails..." });
+  renderIntel(m);
+}
+
+function removeIntel(i) {
+  store.missions[currentMissionId].intel.splice(i, 1);
+  renderIntel(store.missions[currentMissionId]);
+}
+
+function addNote() {
+  const m = store.missions[currentMissionId];
+  m.notes.push("<strong>Nouvelle note :</strong> ");
+  renderNotes(m);
+}
+
+// ========== PLAYERS ==========
+function openAddPlayer() {
+  editingPlayerIndex = -1;
+  document.getElementById("modal-title").textContent = "Ajouter un joueur";
+  document.getElementById("p-name").value = "";
+  document.getElementById("p-role").value = "";
+  document.getElementById("p-plan").value = "";
+  document.getElementById("p-equip").value = "";
+  document.getElementById("player-modal").classList.add("show");
+}
+
+function editPlayer(i) {
+  editingPlayerIndex = i;
+  const p = store.missions[currentMissionId].players[i];
+  document.getElementById("modal-title").textContent = "Modifier le joueur";
+  document.getElementById("p-name").value = p.name;
+  document.getElementById("p-role").value = p.role;
+  document.getElementById("p-plan").value = p.plan;
+  document.getElementById("p-equip").value = (p.equip || []).join(", ");
+  document.getElementById("player-modal").classList.add("show");
+}
+
+function savePlayer() {
+  const name = document.getElementById("p-name").value.trim();
+  if (!name) return alert("Nom obligatoire");
+  const role = document.getElementById("p-role").value.trim();
+  const plan = document.getElementById("p-plan").value.trim();
+  const equip = document.getElementById("p-equip").value.split(",").map(s => s.trim()).filter(Boolean);
+
+  const player = { name, role, plan, equip };
+  const m = store.missions[currentMissionId];
+  if (editingPlayerIndex >= 0) m.players[editingPlayerIndex] = player;
+  else m.players.push(player);
+
+  closeModal();
+  renderPlayers(m);
+  saveStore();
+}
+
+function deletePlayer(i) {
+  if (confirm("Supprimer ce joueur ?")) {
+    store.missions[currentMissionId].players.splice(i, 1);
+    renderPlayers(store.missions[currentMissionId]);
+    saveStore();
+  }
+}
+
+function addEquip(i) {
+  const item = prompt("Nouvel équipement :");
+  if (item && item.trim()) {
+    store.missions[currentMissionId].players[i].equip.push(item.trim());
+    renderPlayers(store.missions[currentMissionId]);
+    saveStore();
+  }
+}
+
+function removeEquip(pi, ei) {
+  store.missions[currentMissionId].players[pi].equip.splice(ei, 1);
+  renderPlayers(store.missions[currentMissionId]);
+  saveStore();
+}
+
+// ========== MISSION CRUD ==========
+function openNewMission() {
+  document.getElementById("nm-title").value = "";
+  document.getElementById("nm-location").value = "";
+  document.getElementById("new-mission-modal").classList.add("show");
+}
+
+function createMission() {
+  const title = document.getElementById("nm-title").value.trim() || "Nouvelle Mission";
+  const location = document.getElementById("nm-location").value.trim() || "Los Santos";
+  const id = "m_" + Date.now();
+
+  store.missions[id] = {
+    id,
+    title,
+    location,
+    goal: "Définir l'objectif de la mission...",
+    riskLevel: "MOYEN",
+    riskDesc: "",
+    riskPercent: 50,
+    images: ["", "", ""],
+    objectives: [
+      { icon: "🎯", title: "Objectif 1", desc: "Description" }
+    ],
+    security: [
+      { label: "Caméras", value: "À définir", type: "" },
+      { label: "Alarme", value: "À définir", type: "" }
+    ],
+    intel: [
+      { icon: "📋", title: "Intel", text: "Renseignements à compléter..." }
+    ],
+    players: [],
+    notes: ["<strong>Note :</strong> Ajoutez vos notes d'équipe ici."]
+  };
+
+  closeModal();
+  saveStore();
+  renderMissionList();
+  selectMission(id);
+}
+
+function deleteMission(id) {
+  if (!confirm("Supprimer définitivement cette mission ?")) return;
+  delete store.missions[id];
+  saveStore();
+  if (currentMissionId === id) {
+    currentMissionId = null;
+    const ids = Object.keys(store.missions);
+    if (ids.length) selectMission(ids[0]);
+    else showEmpty();
+  }
+  renderMissionList();
+}
+
+function deleteCurrentMission() {
+  if (currentMissionId) deleteMission(currentMissionId);
+}
+
+function saveCurrentMission(silent = false) {
+  if (!currentMissionId) return;
+  const m = store.missions[currentMissionId];
+
+  m.title = document.getElementById("m-title").innerText.trim();
+  m.location = document.getElementById("m-location").innerText.trim();
+  m.goal = document.getElementById("m-goal").innerHTML;
+  m.riskLevel = document.getElementById("risk-level").innerText.trim();
+  m.riskDesc = document.getElementById("risk-desc").innerText.trim();
+
+  // Objectives
+  const objEls = document.querySelectorAll("#objectives-grid .target-item");
+  m.objectives = [];
+  objEls.forEach(el => {
+    const title = el.querySelector("h3")?.innerText.trim() || "";
+    const desc = el.querySelector("p")?.innerText.trim() || "";
+    const icon = el.querySelector(".icon")?.innerText || "🎯";
+    m.objectives.push({ icon, title, desc });
+  });
+
+  // Security
+  const secEls = document.querySelectorAll("#security-grid .sec-box");
+  m.security = [];
+  secEls.forEach(el => {
+    const label = el.querySelector(".label")?.innerText.trim() || "";
+    const valueEl = el.querySelector(".value");
+    const value = valueEl?.innerText.trim() || "";
+    let type = "";
+    if (valueEl?.classList.contains("danger")) type = "danger";
+    else if (valueEl?.classList.contains("ok")) type = "ok";
+    else if (valueEl?.classList.contains("warn")) type = "warn";
+    m.security.push({ label, value, type });
+  });
+
+  // Intel
+  const intelEls = document.querySelectorAll("#intel-list li");
+  m.intel = [];
+  intelEls.forEach(el => {
+    const icon = el.querySelector(".intel-icon")?.innerText || "📋";
+    const title = el.querySelector("h4")?.innerText.trim() || "";
+    const text = el.querySelector("p")?.innerText.trim() || "";
+    m.intel.push({ icon, title, text });
+  });
+
+  // Notes
+  const noteEls = document.querySelectorAll("#notes-container .note");
+  m.notes = [];
+  noteEls.forEach(el => {
+    // Remove the delete button text if present
+    const clone = el.cloneNode(true);
+    const btn = clone.querySelector("button");
+    if (btn) btn.remove();
+    m.notes.push(clone.innerHTML.trim());
+  });
+
+  saveStore();
+  renderMissionList();
+
+  if (!silent) {
+    const btn = document.querySelector(".edit-controls .btn");
+    if (btn) {
+      const old = btn.textContent;
+      btn.textContent = "✓ SAUVEGARDÉ";
+      setTimeout(() => btn.textContent = old, 1200);
+    }
+  }
+}
+
+// ========== EXPORT / IMPORT ==========
+function exportJSON() {
+  const dataStr = JSON.stringify(store, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "heist-framework-backup.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.missions) throw new Error("Format invalide");
+      if (confirm("Remplacer toutes les missions actuelles par ce fichier ?")) {
+        store = data;
+        if (!store.password) store.password = DEFAULT_PASSWORD;
+        saveStore();
+        renderMissionList();
+        const ids = Object.keys(store.missions);
+        if (ids.length) selectMission(ids[0]);
+        else showEmpty();
+        alert("Import réussi !");
+      }
+    } catch (err) {
+      alert("Erreur d'import : " + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+}
+
+// ========== PASSWORD CHANGE ==========
+function changePassword() {
+  document.getElementById("pw-modal").classList.add("show");
+}
+
+function setNewPassword() {
+  const p1 = document.getElementById("new-pw").value;
+  const p2 = document.getElementById("new-pw2").value;
+  if (!p1 || p1 !== p2) return alert("Les codes ne correspondent pas");
+  store.password = p1;
+  saveStore();
+  closeModal();
+  alert("Code changé !");
+}
+
+function closeModal() {
+  document.querySelectorAll(".modal").forEach(m => m.classList.remove("show"));
+}
+
+// ========== UTILS ==========
+function weaponIcon(name) {
+  const n = (name || "").toLowerCase();
+  if (n.includes("pistol") || n.includes("pistolet")) return "🔫";
+  if (n.includes("smg") || n.includes("uzi") || n.includes("micro")) return "🔫";
+  if (n.includes("rifle") || n.includes("assault") || n.includes("ak") || n.includes("m4") || n.includes("carbine")) return "🔫";
+  if (n.includes("shotgun") || n.includes("pompe")) return "🔫";
+  if (n.includes("sniper")) return "🎯";
+  if (n.includes("gilet") || n.includes("armor") || n.includes("pare-balles") || n.includes("kevlar")) return "🛡️";
+  if (n.includes("grenade") || n.includes("flash") || n.includes("sticky")) return "💥";
+  if (n.includes("laptop") || n.includes("hack") || n.includes("pc")) return "💻";
+  if (n.includes("radio")) return "📻";
+  if (n.includes("crowbar") || n.includes("pied") || n.includes("cutter")) return "🔧";
+  if (n.includes("mask") || n.includes("masque")) return "🎭";
+  if (n.includes("bag") || n.includes("sac")) return "🎒";
+  return "🎒";
+}
+
+function esc(str) {
+  if (!str) return "";
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// ========== START ==========
+document.getElementById("password-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") checkPassword();
+});
+
+loadStore();
+</script>
+</body>
+</html>
