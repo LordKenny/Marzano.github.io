@@ -113,6 +113,15 @@
   .app-layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 80px); }
   .sidebar { background: #0f0f0f; border-right: 1px solid #222; padding: 20px 16px; overflow-y: auto; }
   .sidebar h3 { font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 2px; color: var(--gold); margin-bottom: 14px; text-transform: uppercase; }
+  .sidebar-section { margin-bottom: 28px; }
+  .nav-item {
+    background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 5px; padding: 12px 14px;
+    margin-bottom: 8px; cursor: pointer; transition: 0.15s; font-family: 'Oswald', sans-serif;
+    font-size: 14px; letter-spacing: 1px; color: var(--text);
+  }
+  .nav-item:hover { border-color: #444; }
+  .nav-item.active { border-color: var(--gold); background: #1f1a10; color: var(--gold); }
+
   .mission-item {
     background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 5px; padding: 12px 14px;
     margin-bottom: 8px; cursor: pointer; transition: 0.15s; position: relative;
@@ -217,6 +226,16 @@
 
   .empty-state { text-align: center; padding: 60px 20px; color: #555; }
   .empty-state h3 { font-family: 'Oswald', sans-serif; letter-spacing: 2px; margin-bottom: 10px; }
+
+  /* Finance placeholder */
+  .placeholder-box {
+    background: #111; border: 1px dashed #333; border-radius: 8px;
+    padding: 60px 40px; text-align: center; color: #666;
+  }
+  .placeholder-box h3 {
+    font-family: 'Oswald', sans-serif; font-size: 22px; letter-spacing: 2px;
+    color: var(--gold); margin-bottom: 12px;
+  }
 </style>
 </head>
 <body>
@@ -248,7 +267,7 @@
     <div class="logo-icon">LS</div>
     <div class="logo-text">
       <h1>Marzano</h1>
-      <span>Los Santos • Préparation des plans</span>
+      <span>Los Santos • Multi-Module</span>
     </div>
   </div>
   <div class="header-right">
@@ -260,102 +279,135 @@
 
 <div class="app-layout">
   <aside class="sidebar">
-    <h3>Missions</h3>
-    <div id="mission-list"></div>
-    <button class="btn small" style="width:100%; margin-top:12px; display:none;" id="btn-new-mission" onclick="openNewMission()">+ Nouvelle Mission</button>
+    <!-- NAVIGATION PRINCIPALE -->
+    <div class="sidebar-section">
+      <h3>Modules</h3>
+      <div class="nav-item active" id="nav-missions" onclick="switchModule('missions')">Missions</div>
+      <div class="nav-item" id="nav-finance" onclick="switchModule('finance')">Finance</div>
+    </div>
+
+    <!-- LISTE DES MISSIONS (visible seulement sur le module Missions) -->
+    <div class="sidebar-section" id="missions-sidebar">
+      <h3>Missions</h3>
+      <div id="mission-list"></div>
+      <button class="btn small" style="width:100%; margin-top:12px; display:none;" id="btn-new-mission" onclick="openNewMission()">+ Nouvelle Mission</button>
+      
+      <div style="margin-top:18px;">
+        <button class="btn small ghost" style="width:100%;" onclick="document.getElementById('import-file').click()">Import JSON</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
+      </div>
+    </div>
   </aside>
 
   <main class="main">
-    <div class="empty-state" id="empty-state">
-      <h3>Aucune mission sélectionnée</h3>
-      <p>Choisis une mission ou crée-en une nouvelle (mode édition).</p>
+    <!-- MODULE MISSIONS -->
+    <div id="module-missions">
+      <div class="empty-state" id="empty-state">
+        <h3>Aucune mission sélectionnée</h3>
+        <p>Choisis une mission ou crée-en une nouvelle (mode édition).</p>
+      </div>
+
+      <div id="mission-view" style="display:none;">
+        <div class="edit-controls">
+          <button class="btn small" onclick="saveAll(true)">💾 Sauvegarder maintenant</button>
+          <button class="btn small ghost" onclick="changePassword()">Changer le code</button>
+          <button class="btn small danger" onclick="deleteCurrentMission()">Supprimer cette mission</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h2>Informations Mission</h2></div>
+          <div class="card-body">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+              <div>
+                <div style="font-size:10px; color:var(--muted); letter-spacing:1px; margin-bottom:4px;">NOM DE LA MISSION</div>
+                <div contenteditable="false" class="editable" id="m-title" style="font-family:'Oswald',sans-serif; font-size:22px; color:var(--gold); letter-spacing:2px;"></div>
+              </div>
+              <div>
+                <div style="font-size:10px; color:var(--muted); letter-spacing:1px; margin-bottom:4px;">LIEU</div>
+                <div contenteditable="false" class="editable" id="m-location" style="font-size:16px; color:var(--text);"></div>
+              </div>
+            </div>
+            <div style="margin-top:14px;">
+              <div style="font-size:10px; color:var(--muted); letter-spacing:1px; margin-bottom:4px;">OBJECTIF GLOBAL</div>
+              <div contenteditable="false" class="editable" id="m-goal" style="font-size:14px; color:#ccc; line-height:1.5;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <div class="card">
+              <div class="card-header"><h2>Photos / Reconnaissance</h2></div>
+              <div class="card-body"><div class="images-grid" id="images-grid"></div></div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2>Objectifs</h2>
+                <button class="btn small" style="display:none;" id="btn-add-obj" onclick="addObjective()">+</button>
+              </div>
+              <div class="card-body"><div class="grid-3" id="objectives-grid"></div></div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2>Sécurité & Intel</h2>
+                <button class="btn small" style="display:none;" id="btn-add-sec" onclick="addSecurityItem()">+</button>
+              </div>
+              <div class="card-body"><div class="security-grid" id="security-grid"></div></div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2>Détails Opérationnels</h2>
+                <button class="btn small" style="display:none;" id="btn-add-intel" onclick="addIntel()">+</button>
+              </div>
+              <div class="card-body"><ul class="intel-list" id="intel-list"></ul></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <div class="card-header">
+                <h2>Équipe</h2>
+                <button class="btn small" style="display:none;" id="btn-add-player" onclick="openAddPlayer()">+ Joueur</button>
+              </div>
+              <div class="card-body" id="players-container"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2>Notes d'Équipe</h2>
+                <button class="btn small" style="display:none;" id="btn-add-note" onclick="addNote()">+</button>
+              </div>
+              <div class="card-body" id="notes-container"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><h2>Niveau de Risque</h2></div>
+              <div class="card-body" style="text-align:center; padding:22px;">
+                <div contenteditable="false" class="editable" id="risk-level" style="font-family:'Oswald',sans-serif; font-size:36px; color:var(--red); letter-spacing:3px;"></div>
+                <div contenteditable="false" class="editable" id="risk-desc" style="font-size:12px; color:var(--muted); margin-top:6px;"></div>
+                <div class="risk-bar"><div class="risk-fill" id="risk-bar-fill" style="width:75%;"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div id="mission-view" style="display:none;">
-      <div class="edit-controls">
-        <button class="btn small" onclick="saveAll(true)">💾 Sauvegarder maintenant</button>
-        <button class="btn small ghost" onclick="changePassword()">Changer le code</button>
-        <button class="btn small danger" onclick="deleteCurrentMission()">Supprimer cette mission</button>
-      </div>
-
+    <!-- MODULE FINANCE (PLACEHOLDER) -->
+    <div id="module-finance" style="display:none;">
       <div class="card">
-        <div class="card-header"><h2>Informations Mission</h2></div>
+        <div class="card-header"><h2>Finance</h2></div>
         <div class="card-body">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-            <div>
-              <div style="font-size:10px; color:var(--muted); letter-spacing:1px; margin-bottom:4px;">NOM DE LA MISSION</div>
-              <div contenteditable="false" class="editable" id="m-title" style="font-family:'Oswald',sans-serif; font-size:22px; color:var(--gold); letter-spacing:2px;"></div>
-            </div>
-            <div>
-              <div style="font-size:10px; color:var(--muted); letter-spacing:1px; margin-bottom:4px;">LIEU</div>
-              <div contenteditable="false" class="editable" id="m-location" style="font-size:16px; color:var(--text);"></div>
-            </div>
-          </div>
-          <div style="margin-top:14px;">
-            <div style="font-size:10px; color:var(--muted); letter-spacing:1px; margin-bottom:4px;">OBJECTIF GLOBAL</div>
-            <div contenteditable="false" class="editable" id="m-goal" style="font-size:14px; color:#ccc; line-height:1.5;"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div>
-          <div class="card">
-            <div class="card-header"><h2>Photos / Reconnaissance</h2></div>
-            <div class="card-body">
-              <div class="images-grid" id="images-grid"></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <h2>Objectifs</h2>
-              <button class="btn small" style="display:none;" id="btn-add-obj" onclick="addObjective()">+</button>
-            </div>
-            <div class="card-body"><div class="grid-3" id="objectives-grid"></div></div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <h2>Sécurité & Intel</h2>
-              <button class="btn small" style="display:none;" id="btn-add-sec" onclick="addSecurityItem()">+</button>
-            </div>
-            <div class="card-body"><div class="security-grid" id="security-grid"></div></div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <h2>Détails Opérationnels</h2>
-              <button class="btn small" style="display:none;" id="btn-add-intel" onclick="addIntel()">+</button>
-            </div>
-            <div class="card-body"><ul class="intel-list" id="intel-list"></ul></div>
-          </div>
-        </div>
-
-        <div>
-          <div class="card">
-            <div class="card-header">
-              <h2>Équipe</h2>
-              <button class="btn small" style="display:none;" id="btn-add-player" onclick="openAddPlayer()">+ Joueur</button>
-            </div>
-            <div class="card-body" id="players-container"></div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <h2>Notes d'Équipe</h2>
-              <button class="btn small" style="display:none;" id="btn-add-note" onclick="addNote()">+</button>
-            </div>
-            <div class="card-body" id="notes-container"></div>
-          </div>
-
-          <div class="card">
-            <div class="card-header"><h2>Niveau de Risque</h2></div>
-            <div class="card-body" style="text-align:center; padding:22px;">
-              <div contenteditable="false" class="editable" id="risk-level" style="font-family:'Oswald',sans-serif; font-size:36px; color:var(--red); letter-spacing:3px;"></div>
-              <div contenteditable="false" class="editable" id="risk-desc" style="font-size:12px; color:var(--muted); margin-top:6px;"></div>
-              <div class="risk-bar"><div class="risk-fill" id="risk-bar-fill" style="width:75%;"></div></div>
-            </div>
+          <div class="placeholder-box">
+            <h3>MODULE FINANCE</h3>
+            <p style="font-size:15px; margin-bottom:8px;">En cours de développement</p>
+            <p style="font-size:13px; color:#555;">
+              Cette section accueillera bientôt la gestion financière<br>
+              (revenus, dépenses, investissements, etc.)
+            </p>
           </div>
         </div>
       </div>
@@ -407,7 +459,7 @@
 
 <script>
 /* ============================================================
-   CONFIG JSONBIN — REMPLACE ICI
+   CONFIG JSONBIN
    ============================================================ */
 const JSONBIN_ID  = "6ab3419cac6210605aeb7ddc";
 const JSONBIN_KEY = "$2a$10$q6fkAXPYKKd6Hes1gcIiA./H20tvrPTV3/bZo92TBJBU0zNswJK3S";
@@ -417,6 +469,7 @@ const DEFAULT_PASSWORD = "lester";
 let isEditMode = false;
 let currentMissionId = null;
 let editingPlayerIndex = -1;
+let currentModule = "missions";
 let store = { password: DEFAULT_PASSWORD, missions: {} };
 let saveTimeout = null;
 
@@ -489,7 +542,7 @@ async function saveToJSONBin() {
 
 function scheduleSave() {
   clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(() => saveToJSONBin(), 800); // debounce
+  saveTimeout = setTimeout(() => saveToJSONBin(), 800);
 }
 
 function showStatus(msg, isError = false) {
@@ -497,6 +550,47 @@ function showStatus(msg, isError = false) {
   el.textContent = msg;
   el.className = "show" + (isError ? " error" : " success");
   setTimeout(() => el.classList.remove("show"), 2500);
+}
+
+/* ========== IMPORT JSON ========== */
+function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.missions && !data.password) throw new Error("Format invalide");
+      if (confirm("Remplacer toutes les données actuelles par ce fichier ?")) {
+        store = data;
+        if (!store.password) store.password = DEFAULT_PASSWORD;
+        if (!store.missions) store.missions = {};
+        saveToJSONBin();
+        renderMissionList();
+        const ids = Object.keys(store.missions);
+        if (ids.length) selectMission(ids[0]);
+        else showEmpty();
+        alert("Import réussi !");
+      }
+    } catch (err) {
+      alert("Erreur d'import : " + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+}
+
+/* ========== MODULE SWITCH ========== */
+function switchModule(mod) {
+  currentModule = mod;
+  document.getElementById("nav-missions").classList.toggle("active", mod === "missions");
+  document.getElementById("nav-finance").classList.toggle("active", mod === "finance");
+
+  document.getElementById("module-missions").style.display = mod === "missions" ? "block" : "none";
+  document.getElementById("module-finance").style.display = mod === "finance" ? "block" : "none";
+  document.getElementById("missions-sidebar").style.display = mod === "missions" ? "block" : "none";
+
+  document.getElementById("header-mission-tag").textContent = mod === "missions" ? "BRIEFING" : "FINANCE";
 }
 
 /* ========== AUTH ========== */
@@ -601,7 +695,6 @@ function saveCurrentMission(silent = false) {
   m.riskLevel = document.getElementById("risk-level").innerText.trim();
   m.riskDesc = document.getElementById("risk-desc").innerText.trim();
 
-  // Objectives
   m.objectives = [];
   document.querySelectorAll("#objectives-grid .target-item").forEach(el => {
     m.objectives.push({
@@ -611,7 +704,6 @@ function saveCurrentMission(silent = false) {
     });
   });
 
-  // Security
   m.security = [];
   document.querySelectorAll("#security-grid .sec-box").forEach(el => {
     const v = el.querySelector(".value");
@@ -626,7 +718,6 @@ function saveCurrentMission(silent = false) {
     });
   });
 
-  // Intel
   m.intel = [];
   document.querySelectorAll("#intel-list li").forEach(el => {
     m.intel.push({
@@ -636,7 +727,6 @@ function saveCurrentMission(silent = false) {
     });
   });
 
-  // Notes
   m.notes = [];
   document.querySelectorAll("#notes-container .note").forEach(el => {
     const clone = el.cloneNode(true);
@@ -648,7 +738,7 @@ function saveCurrentMission(silent = false) {
   if (!silent) scheduleSave();
 }
 
-function saveAll(force = false) {
+function saveAll() {
   saveCurrentMission(true);
   saveToJSONBin();
 }
