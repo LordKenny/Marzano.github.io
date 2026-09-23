@@ -532,11 +532,18 @@ async function saveToJSONBin() {
       },
       body: JSON.stringify(store)
     });
-    if (!res.ok) throw new Error("Erreur sauvegarde");
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Erreur ${res.status} : ${errText}`);
+    }
+
     showStatus("Sauvegardé ✓", false);
+    return true;
   } catch (e) {
     console.error(e);
     showStatus("Erreur de sauvegarde", true);
+    throw e; // important pour que l'import puisse attraper l'erreur
   }
 }
 
@@ -556,28 +563,72 @@ function showStatus(msg, isError = false) {
 function importJSON(e) {
   const file = e.target.files[0];
   if (!file) return;
+
+  // Affiche un message pendant le chargement
+  showStatus("Import en cours...", false);
+
   const reader = new FileReader();
+  
+  reader.onerror = () => {
+    showStatus("Erreur de lecture du fichier", true);
+    alert("Impossible de lire le fichier.");
+  };
+
   reader.onload = ev => {
     try {
       const data = JSON.parse(ev.target.result);
-      if (!data.missions && !data.password) throw new Error("Format invalide");
-      if (confirm("Remplacer toutes les données actuelles par ce fichier ?")) {
-        store = data;
-        if (!store.password) store.password = DEFAULT_PASSWORD;
-        if (!store.missions) store.missions = {};
-        saveToJSONBin();
+
+      // Vérification plus souple
+      if (!data || (typeof data !== "object")) {
+        throw new Error("Le fichier n'est pas un JSON valide");
+      }
+
+      if (!data.missions && !data.password) {
+        throw new Error("Format non reconnu (pas de 'missions' ni 'password')");
+      }
+
+      const confirmMsg = `Remplacer toutes les données actuelles par ce fichier ?\n\n` +
+                         `• Mot de passe : ${data.password ? "présent" : "absent"}\n` +
+                         `• Nombre de missions : ${data.missions ? Object.keys(data.missions).length : 0}`;
+
+      if (!confirm(confirmMsg)) {
+        showStatus("Import annulé", false);
+        return;
+      }
+
+      // On applique les données
+      store = data;
+      if (!store.password) store.password = DEFAULT_PASSWORD;
+      if (!store.missions) store.missions = {};
+
+      // On force la sauvegarde
+      saveToJSONBin().then(() => {
         renderMissionList();
         const ids = Object.keys(store.missions);
-        if (ids.length) selectMission(ids[0]);
-        else showEmpty();
+        if (ids.length) {
+          selectMission(ids[0]);
+        } else {
+          showEmpty();
+        }
         alert("Import réussi !");
-      }
+        showStatus("Import terminé ✓", false);
+      }).catch(err => {
+        console.error(err);
+        alert("Les données ont été chargées localement, mais la sauvegarde sur JSONBin a échoué.\n\n" +
+              "Cause probable : le fichier est trop lourd (image base64 trop grande).\n" +
+              "Essayez de retirer les images avant d'importer.");
+        showStatus("Import local OK, sync échouée", true);
+      });
+
     } catch (err) {
-      alert("Erreur d'import : " + err.message);
+      console.error(err);
+      alert("Erreur d'import :\n" + err.message);
+      showStatus("Erreur d'import", true);
     }
   };
+
   reader.readAsText(file);
-  e.target.value = "";
+  e.target.value = ""; // reset pour pouvoir réimporter le même fichier
 }
 
 /* ========== MODULE SWITCH ========== */
