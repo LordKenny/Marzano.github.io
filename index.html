@@ -221,6 +221,22 @@
   }
   .tx-add { color: var(--green); }
   .tx-remove { color: var(--red); }
+
+  .pie-wrapper { position: relative; width: 320px; height: 320px; }
+  #finance-pie { border-radius: 50%; transition: transform 0.35s ease; cursor: pointer; }
+  #finance-pie:hover { transform: scale(1.04); }
+  .pie-center {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    text-align: center; pointer-events: none;
+  }
+  #pie-center-value { font-family: 'Oswald', sans-serif; font-size: 26px; color: var(--gold); letter-spacing: 1px; }
+  #pie-center-label { font-size: 11px; color: #888; letter-spacing: 2px; margin-top: 2px; }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px; background: #111; border: 1px solid #2a2a2a;
+    padding: 8px 14px; border-radius: 4px; font-size: 13px; transition: 0.2s;
+  }
+  .legend-item:hover { border-color: var(--gold); transform: translateY(-2px); }
+  .legend-color { width: 12px; height: 12px; border-radius: 2px; }
 </style>
 </head>
 <body>
@@ -377,7 +393,9 @@
       <div class="edit-controls" id="finance-edit-controls">
         <button class="btn small" onclick="openAddTransaction('add')">+ Ajouter de l'argent</button>
         <button class="btn small danger" onclick="openAddTransaction('remove')">− Retirer de l'argent</button>
-        <button class="btn small ghost" onclick="changeFinancePassword()">Changer mdp Finance</button>
+        <button class="btn small ghost" onclick="addFinancePassword()">+ Ajouter mdp Finance</button>
+        <button class="btn small ghost" onclick="removeFinancePassword()">− Supprimer mdp Finance</button>
+        <button class="btn small ghost" onclick="listFinancePasswords()">Voir les mdp</button>
       </div>
 
       <div class="card">
@@ -388,10 +406,17 @@
       </div>
 
       <div class="card">
-        <div class="card-header"><h2>Répartition par catégorie</h2></div>
-        <div class="card-body">
-          <div class="grid-3" id="finance-categories"></div>
+        <div class="card-header"><h2>Répartition des gains</h2></div>
+        <div class="card-body" style="display:flex; justify-content:center; padding:40px 20px;">
+          <div class="pie-wrapper">
+            <canvas id="finance-pie" width="320" height="320"></canvas>
+            <div class="pie-center">
+              <div id="pie-center-value">$0</div>
+              <div id="pie-center-label">TOTAL</div>
+            </div>
+          </div>
         </div>
+        <div id="pie-legend" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; padding:0 20px 24px;"></div>
       </div>
 
       <div class="card">
@@ -453,15 +478,10 @@
     <input type="number" id="tx-amount" min="1" placeholder="Ex: 5000">
     <label>Catégorie</label>
     <select id="tx-category">
-      <option value="TSCA">TSCA</option>
-      <option value="ACRU">ACRU</option>
-      <option value="PIST">PIST</option>
-      <option value="BEPA">BEPA</option>
-      <option value="PIRU">PIRU</option>
-      <option value="Autres">Autres</option>
-      <option value="Missions">Missions</option>
       <option value="Drogue">Drogue</option>
+      <option value="Missions">Missions</option>
       <option value="Braquages">Braquages</option>
+      <option value="Autres">Autres</option>
     </select>
     <label>Raison</label>
     <input type="text" id="tx-reason" placeholder="Ex: Braquage Superette">
@@ -476,7 +496,7 @@
 const JSONBIN_ID  = "6ab3419cac6210605aeb7ddc";
 const JSONBIN_KEY = "$2a$10$q6fkAXPYKKd6Hes1gcIiA./H20tvrPTV3/bZo92TBJBU0zNswJK3S";
 const DEFAULT_PASSWORD = "lester";
-const DEFAULT_FINANCE_PASSWORD = "finance123";
+const DEFAULT_FINANCE_PASSWORDS = ["finance123"];
 
 let isEditMode = false;
 let financeEditMode = false;
@@ -485,8 +505,15 @@ let currentMissionId = null;
 let editingPlayerIndex = -1;
 let currentModule = "missions";
 let currentTxType = "add";
-let store = { password: DEFAULT_PASSWORD, financePassword: DEFAULT_FINANCE_PASSWORD, missions: {}, finance: null };
+let store = { password: DEFAULT_PASSWORD, financePasswords: DEFAULT_FINANCE_PASSWORDS, missions: {}, finance: null };
 let saveTimeout = null;
+
+const FINANCE_COLORS = {
+  "Drogue": "#e74c3c",
+  "Missions": "#f1c40f",
+  "Braquages": "#3498db",
+  "Autres": "#9b59b6"
+};
 
 /* ========== LOADER ========== */
 function startDarkwebLoader() {
@@ -525,28 +552,19 @@ async function loadFromJSONBin() {
     const json = await res.json();
     store = json.record || json;
     if (!store.password) store.password = DEFAULT_PASSWORD;
-    if (!store.financePassword) store.financePassword = DEFAULT_FINANCE_PASSWORD;
+    if (!store.financePasswords) store.financePasswords = [...DEFAULT_FINANCE_PASSWORDS];
     if (!store.missions) store.missions = {};
-    if (!store.finance) {
-      store.finance = {
-        balance: 0,
-        categories: { "TSCA":0,"ACRU":0,"PIST":0,"BEPA":0,"PIRU":0,"Autres":0,"Missions":0,"Drogue":0,"Braquages":0 },
-        history: []
-      };
-    }
+    ensureFinance();
     console.log("Données chargées");
   } catch (e) {
     console.error(e);
     store = {
       password: DEFAULT_PASSWORD,
-      financePassword: DEFAULT_FINANCE_PASSWORD,
+      financePasswords: [...DEFAULT_FINANCE_PASSWORDS],
       missions: {},
-      finance: {
-        balance: 0,
-        categories: { "TSCA":0,"ACRU":0,"PIST":0,"BEPA":0,"PIRU":0,"Autres":0,"Missions":0,"Drogue":0,"Braquages":0 },
-        history: []
-      }
+      finance: null
     };
+    ensureFinance();
     showStatus("Erreur de connexion à JSONBin", true);
   }
 }
@@ -594,9 +612,9 @@ function importJSON(e) {
       if (!confirm("Remplacer toutes les données actuelles ?")) return;
       store = data;
       if (!store.password) store.password = DEFAULT_PASSWORD;
-      if (!store.financePassword) store.financePassword = DEFAULT_FINANCE_PASSWORD;
+      if (!store.financePasswords) store.financePasswords = [...DEFAULT_FINANCE_PASSWORDS];
       if (!store.missions) store.missions = {};
-      if (!store.finance) store.finance = { balance:0, categories:{}, history:[] };
+      ensureFinance();
       saveToJSONBin().then(() => {
         renderMissionList();
         const ids = Object.keys(store.missions);
@@ -637,7 +655,8 @@ function switchModule(mod) {
 function askFinancePassword() {
   const input = prompt("Mot de passe Finance requis pour modifier :");
   if (input === null) return false;
-  if (input === store.financePassword) {
+
+  if (store.financePasswords && store.financePasswords.includes(input)) {
     financeEditMode = true;
     usedPasswordPreview = input.substring(0, 3) + "...";
     document.getElementById("finance-edit-controls").classList.add("show");
@@ -702,7 +721,7 @@ function lockEdit() {
   renderMissionList();
 }
 
-/* ========== MISSIONS (identiques) ========== */
+/* ========== MISSIONS ========== */
 function renderMissionList() {
   const list = document.getElementById("mission-list");
   list.innerHTML = "";
@@ -1070,29 +1089,86 @@ function closeModal() {
 }
 
 /* ========== FINANCE ========== */
-function renderFinance() {
+function ensureFinance() {
   if (!store.finance) {
     store.finance = {
       balance: 0,
-      categories: { "TSCA":0,"ACRU":0,"PIST":0,"BEPA":0,"PIRU":0,"Autres":0,"Missions":0,"Drogue":0,"Braquages":0 },
+      categories: { "Drogue": 0, "Missions": 0, "Braquages": 0, "Autres": 0 },
       history: []
     };
   }
-
-  document.getElementById("finance-balance").textContent = "$" + (store.finance.balance || 0).toLocaleString();
-
-  const catContainer = document.getElementById("finance-categories");
-  catContainer.innerHTML = "";
-  for (const [name, value] of Object.entries(store.finance.categories)) {
-    const div = document.createElement("div");
-    div.className = "target-item";
-    div.innerHTML = `
-      <h3>${name}</h3>
-      <p style="font-size:18px; color:var(--gold); margin-top:8px;">$${(value||0).toLocaleString()}</p>
-    `;
-    catContainer.appendChild(div);
+  const clean = { "Drogue": 0, "Missions": 0, "Braquages": 0, "Autres": 0 };
+  for (const k of Object.keys(clean)) {
+    clean[k] = store.finance.categories?.[k] || 0;
   }
+  store.finance.categories = clean;
+}
 
+function renderFinance() {
+  ensureFinance();
+  document.getElementById("finance-balance").textContent = "$" + (store.finance.balance || 0).toLocaleString();
+  document.getElementById("pie-center-value").textContent = "$" + (store.finance.balance || 0).toLocaleString();
+  drawPieChart();
+  renderPieLegend();
+  renderFinanceHistory();
+}
+
+function drawPieChart() {
+  const canvas = document.getElementById("finance-pie");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const data = store.finance.categories;
+  const total = Object.values(data).reduce((a, b) => a + Math.max(0, b), 0) || 1;
+
+  ctx.clearRect(0, 0, 320, 320);
+  let startAngle = -Math.PI / 2;
+  const cx = 160, cy = 160, radius = 140;
+
+  Object.keys(data).forEach(key => {
+    const value = Math.max(0, data[key]);
+    const slice = (value / total) * Math.PI * 2;
+    const endAngle = startAngle + slice;
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, startAngle, endAngle);
+    ctx.closePath();
+    ctx.fillStyle = FINANCE_COLORS[key] || "#555";
+    ctx.fill();
+    ctx.strokeStyle = "#0a0a0a";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    startAngle = endAngle;
+  });
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, 72, 0, Math.PI * 2);
+  ctx.fillStyle = "#1a1a1a";
+  ctx.fill();
+}
+
+function renderPieLegend() {
+  const container = document.getElementById("pie-legend");
+  container.innerHTML = "";
+  const data = store.finance.categories;
+  const total = Object.values(data).reduce((a, b) => a + Math.max(0, b), 0) || 1;
+
+  for (const [name, value] of Object.entries(data)) {
+    const percent = ((Math.max(0, value) / total) * 100).toFixed(1);
+    const div = document.createElement("div");
+    div.className = "legend-item";
+    div.innerHTML = `
+      <div class="legend-color" style="background:${FINANCE_COLORS[name]}"></div>
+      <span>${name}</span>
+      <strong style="color:var(--gold); margin-left:6px;">$${value.toLocaleString()}</strong>
+      <span style="color:#666; font-size:11px;">(${percent}%)</span>
+    `;
+    container.appendChild(div);
+  }
+}
+
+function renderFinanceHistory() {
   const histContainer = document.getElementById("finance-history");
   histContainer.innerHTML = "";
 
@@ -1145,6 +1221,8 @@ function confirmTransaction() {
     return;
   }
 
+  ensureFinance();
+
   if (currentTxType === "add") {
     store.finance.balance += amount;
     store.finance.categories[category] = (store.finance.categories[category] || 0) + amount;
@@ -1168,15 +1246,52 @@ function confirmTransaction() {
   scheduleSave();
 }
 
-function changeFinancePassword() {
+/* ========== GESTION MULTI MOTS DE PASSE FINANCE ========== */
+function addFinancePassword() {
   if (!financeEditMode) return;
-  const p1 = prompt("Nouveau mot de passe Finance :");
-  if (!p1) return;
-  const p2 = prompt("Confirme :");
-  if (p1 !== p2) return alert("Les mots de passe ne correspondent pas");
-  store.financePassword = p1;
+  const newPass = prompt("Nouveau mot de passe Finance à ajouter :");
+  if (!newPass || newPass.trim() === "") return;
+
+  if (!store.financePasswords) store.financePasswords = [];
+  
+  if (store.financePasswords.includes(newPass.trim())) {
+    alert("Ce mot de passe existe déjà");
+    return;
+  }
+
+  store.financePasswords.push(newPass.trim());
   scheduleSave();
-  alert("Mot de passe Finance changé !");
+  alert("Mot de passe ajouté !\n\nListe actuelle :\n• " + store.financePasswords.join("\n• "));
+}
+
+function removeFinancePassword() {
+  if (!financeEditMode) return;
+  if (!store.financePasswords || store.financePasswords.length === 0) {
+    alert("Aucun mot de passe");
+    return;
+  }
+
+  const list = store.financePasswords.map((p, i) => `${i + 1}. ${p}`).join("\n");
+  const choice = prompt("Quel mot de passe supprimer ? (entre le numéro)\n\n" + list);
+  const index = parseInt(choice) - 1;
+
+  if (isNaN(index) || index < 0 || index >= store.financePasswords.length) {
+    alert("Numéro invalide");
+    return;
+  }
+
+  const removed = store.financePasswords.splice(index, 1)[0];
+  scheduleSave();
+  alert(`Mot de passe "${removed}" supprimé`);
+}
+
+function listFinancePasswords() {
+  if (!financeEditMode) return;
+  if (!store.financePasswords || store.financePasswords.length === 0) {
+    alert("Aucun mot de passe Finance");
+    return;
+  }
+  alert("Mots de passe Finance actuels :\n\n• " + store.financePasswords.join("\n• "));
 }
 
 function weaponIcon(name) {
