@@ -816,21 +816,25 @@ function renderImages(m) {
 }
 
 function changeImage(index) {
-  const input = document.createElement("input");
-  input.type = "file"; input.accept = "image/*";
-  input.onchange = e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      if (!store.missions[currentMissionId].images) store.missions[currentMissionId].images = ["","",""];
-      store.missions[currentMissionId].images[index] = ev.target.result;
-      renderImages(store.missions[currentMissionId]);
-      scheduleSave();
-    };
-    reader.readAsDataURL(file);
-  };
-  input.click();
+  const currentUrl = (store.missions[currentMissionId].images || [])[index] || "";
+  
+  const url = prompt(
+    "Colle l'URL de l'image (Discord, Imgur, vizu-world...)\n\nLaisse vide pour supprimer l'image.",
+    currentUrl.startsWith("http") ? currentUrl : ""
+  );
+
+  if (url === null) return; // annulé
+
+  if (!store.missions[currentMissionId].images) {
+    store.missions[currentMissionId].images = ["", "", ""];
+  }
+
+  // Si l'utilisateur a laissé vide → on supprime l'image
+  store.missions[currentMissionId].images[index] = url.trim();
+
+  renderImages(store.missions[currentMissionId]);
+  scheduleSave();
+}ick();
 }
 
 function renderObjectives(m) {
